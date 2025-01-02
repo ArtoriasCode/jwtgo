@@ -1,0 +1,17 @@
+vendor/
+bin/
+tmp_app/
+.idea/
+
+article_clean
+_*
+engine
+*.out
+*.exe
+*.test
+*.prof
+
+.DS_Store
+.vendor
+.env
+config.yaml
