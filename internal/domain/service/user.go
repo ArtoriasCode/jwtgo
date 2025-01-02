@@ -78,26 +78,26 @@ func (s *UserService) SignUp(ctx context.Context, userCredentialsDTO *dto.UserCr
 	return true, nil
 }
 
-func (s *UserService) SignIn(ctx context.Context, userCredentialsDTO *dto.UserCredentialsDTO) (string, string, error) {
+func (s *UserService) SignIn(ctx context.Context, userCredentialsDTO *dto.UserCredentialsDTO) (*dto.UserTokensDTO, error) {
 	existingUserEntity, err := s.repository.GetByEmail(ctx, userCredentialsDTO.Email)
 	if err != nil {
 		s.logger.Error("Error while getting user: ", err)
-		return "", "", customErr.NewInternalServerError("Failed to check user email")
+		return nil, customErr.NewInternalServerError("Failed to check user email")
 	}
 
 	if existingUserEntity == nil {
-		return "", "", customErr.NewInvalidCredentialsError("Invalid login or password")
+		return nil, customErr.NewInvalidCredentialsError("Invalid login or password")
 	}
 
 	passwordIsValid := s.passwordManager.VerifyPassword(userCredentialsDTO.Password, existingUserEntity.Password, existingUserEntity.Salt)
 	if !passwordIsValid {
-		return "", "", customErr.NewInvalidCredentialsError("Invalid login or password")
+		return nil, customErr.NewInvalidCredentialsError("Invalid login or password")
 	}
 
 	accessToken, refreshToken, err := s.tokenManager.GenerateTokens(existingUserEntity.Id)
 	if err != nil {
 		s.logger.Error("Error while generating tokens: ", err)
-		return "", "", customErr.NewInternalServerError("Token generation error")
+		return nil, customErr.NewInternalServerError("Token generation error")
 	}
 
 	existingUserEntity.RefreshToken = refreshToken
@@ -106,37 +106,37 @@ func (s *UserService) SignIn(ctx context.Context, userCredentialsDTO *dto.UserCr
 	_, err = s.repository.Update(ctx, existingUserEntity.Id, existingUserEntity)
 	if err != nil {
 		s.logger.Error("Error while updating user: ", err)
-		return "", "", customErr.NewInternalServerError("Token updating error")
+		return nil, customErr.NewInternalServerError("Token updating error")
 	}
 
-	return accessToken, refreshToken, nil
+	return mapper.MapToUserTokensDTO(accessToken, refreshToken), nil
 }
 
-func (s *UserService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserRefreshTokenDTO) (string, string, error) {
+func (s *UserService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserRefreshTokenDTO) (*dto.UserTokensDTO, error) {
 	claims, err := s.tokenManager.ValidateToken(refreshTokenDTO.RefreshToken)
 	if err != nil {
 		s.logger.Error("Error while checking refresh token: ", err)
-		return "", "", err
+		return nil, err
 	}
 
 	existingUserEntity, err := s.repository.GetById(ctx, claims.Id)
 	if err != nil {
 		s.logger.Error("Error while getting user: ", err)
-		return "", "", customErr.NewInternalServerError("Failed to check user id")
+		return nil, customErr.NewInternalServerError("Failed to check user id")
 	}
 
 	if existingUserEntity == nil {
-		return "", "", customErr.NewUserNotFoundError("User not found")
+		return nil, customErr.NewUserNotFoundError("User not found")
 	}
 
 	if refreshTokenDTO.RefreshToken != existingUserEntity.RefreshToken {
-		return "", "", customErr.NewInvalidRefreshTokenError("Invalid refresh token")
+		return nil, customErr.NewInvalidRefreshTokenError("Invalid refresh token")
 	}
 
 	accessToken, refreshToken, err := s.tokenManager.GenerateTokens(existingUserEntity.Id)
 	if err != nil {
 		s.logger.Error("Error while generating tokens: ", err)
-		return "", "", customErr.NewInternalServerError("Token generation error")
+		return nil, customErr.NewInternalServerError("Token generation error")
 	}
 
 	existingUserEntity.RefreshToken = refreshToken
@@ -145,8 +145,8 @@ func (s *UserService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserRefr
 	_, err = s.repository.Update(ctx, claims.Id, existingUserEntity)
 	if err != nil {
 		s.logger.Error("Error while updating user: ", err)
-		return "", "", customErr.NewInternalServerError("Token updating error")
+		return nil, customErr.NewInternalServerError("Token updating error")
 	}
 
-	return accessToken, refreshToken, nil
+	return mapper.MapToUserTokensDTO(accessToken, refreshToken), nil
 }

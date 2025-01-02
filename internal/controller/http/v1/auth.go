@@ -79,7 +79,7 @@ func (ac *AuthController) SignIn() gin.HandlerFunc {
 
 		userCredentialsDTO := c.MustGet("validatedBody").(dto.UserCredentialsDTO)
 
-		accessToken, refreshToken, err := ac.userService.SignIn(ctx, &userCredentialsDTO)
+		userTokensDTO, err := ac.userService.SignIn(ctx, &userCredentialsDTO)
 		if err != nil {
 			var invalidCredentialsErr *customErr.InvalidCredentialsError
 
@@ -94,8 +94,8 @@ func (ac *AuthController) SignIn() gin.HandlerFunc {
 		}
 
 		request.SetCookies(c, []schema.Cookie{
-			{Name: "access_token", Value: accessToken, Duration: 7 * 24 * time.Hour},
-			{Name: "refresh_token", Value: refreshToken, Duration: 7 * 24 * time.Hour},
+			{Name: "access_token", Value: userTokensDTO.AccessToken, Duration: 7 * 24 * time.Hour},
+			{Name: "refresh_token", Value: userTokensDTO.RefreshToken, Duration: 7 * 24 * time.Hour},
 		})
 
 		c.JSON(http.StatusOK, gin.H{"message": "Logged in successfully"})
@@ -115,7 +115,7 @@ func (ac *AuthController) Refresh() gin.HandlerFunc {
 
 		refreshTokenDTO := mapper.MapToUserRefreshTokenDTO(refreshToken)
 
-		accessToken, refreshToken, err := ac.userService.Refresh(ctx, refreshTokenDTO)
+		userTokensDTO, err := ac.userService.Refresh(ctx, refreshTokenDTO)
 		if err != nil {
 			var invalidRefreshTokenError *customErr.InvalidRefreshTokenError
 			var userNotFoundError *customErr.UserNotFoundError
@@ -131,8 +131,8 @@ func (ac *AuthController) Refresh() gin.HandlerFunc {
 		}
 
 		request.SetCookies(c, []schema.Cookie{
-			{Name: "access_token", Value: accessToken, Duration: 7 * 24 * time.Hour},
-			{Name: "refresh_token", Value: refreshToken, Duration: 7 * 24 * time.Hour},
+			{Name: "access_token", Value: userTokensDTO.AccessToken, Duration: 7 * 24 * time.Hour},
+			{Name: "refresh_token", Value: userTokensDTO.RefreshToken, Duration: 7 * 24 * time.Hour},
 		})
 
 		c.JSON(http.StatusOK, gin.H{"message": "Tokens updated successfully"})

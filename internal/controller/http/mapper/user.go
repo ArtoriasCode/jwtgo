@@ -13,6 +13,13 @@ func MapToUserRefreshTokenDTO(refreshToken string) *dto.UserRefreshTokenDTO {
 	}
 }
 
+func MapToUserTokensDTO(accessToken, refreshToken string) *dto.UserTokensDTO {
+	return &dto.UserTokensDTO{
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}
+}
+
 func MapUserCredentialsDTOToDomainUser(userCredentialsDTO *dto.UserCredentialsDTO) *entity.User {
 	now := time.Now().UTC()
 
