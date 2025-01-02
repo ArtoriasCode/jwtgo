@@ -11,13 +11,13 @@ func Validator[T any](validate *validator.Validate) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var obj T
 		if err := c.ShouldBindJSON(&obj); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"message": "Incorrect request parameters"})
+			c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid request parameters"})
 			c.Abort()
 			return
 		}
 
 		if err := validate.Struct(obj); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"message": "Incorrect request parameters"})
+			c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid request parameters"})
 			c.Abort()
 			return
 		}
