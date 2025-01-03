@@ -23,7 +23,7 @@ type Application struct {
 	MongoClient     *mongo.Client
 	TokenManager    *security.TokenManager
 	PasswordManager *security.PasswordManager
-	UserService     *service.UserService
+	AuthService     *service.AuthService
 }
 
 func NewApplication() *Application {
@@ -63,11 +63,11 @@ func (app *Application) InitializeClients() {
 
 func (app *Application) InitializeServices() {
 	userRepository := repository.NewUserRepository(app.MongoClient, app.Config.MongoDB.Database, "users", app.Logger)
-	app.UserService = service.NewUserService(userRepository, app.TokenManager, app.PasswordManager, app.Logger)
+	app.AuthService = service.NewAuthService(userRepository, app.TokenManager, app.PasswordManager, app.Logger)
 }
 
 func (app *Application) InitializeControllers() {
-	authController := v1.NewAuthController(app.UserService, app.Validator, app.PasswordManager, app.Logger)
+	authController := v1.NewAuthController(app.AuthService, app.Validator, app.PasswordManager, app.Logger)
 	authController.Register(app.Router)
 
 	app.Router.Use(middleware.Authentication(app.TokenManager))
