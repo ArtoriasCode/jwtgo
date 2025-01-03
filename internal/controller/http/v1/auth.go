@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"jwtgo/internal/controller/http/mapper"
+	serviceInterface "jwtgo/internal/interface/service"
 	"jwtgo/pkg/request/schema"
 	"net/http"
 	"time"
@@ -13,30 +14,25 @@ import (
 
 	"jwtgo/internal/controller/http/dto"
 	"jwtgo/internal/controller/http/middleware"
-	"jwtgo/internal/domain/service"
 	customErr "jwtgo/internal/error"
 	"jwtgo/pkg/logging"
 	"jwtgo/pkg/request"
-	"jwtgo/pkg/security"
 )
 
 type AuthController struct {
-	authService      *service.AuthService
+	authService      serviceInterface.AuthService
 	requestValidator *validator.Validate
-	passwordManager  *security.PasswordManager
 	logger           *logging.Logger
 }
 
 func NewAuthController(
-	authService *service.AuthService,
+	authService serviceInterface.AuthService,
 	requestValidator *validator.Validate,
-	passwordManager *security.PasswordManager,
 	logger *logging.Logger,
 ) *AuthController {
 	return &AuthController{
 		authService:      authService,
 		requestValidator: requestValidator,
-		passwordManager:  passwordManager,
 		logger:           logger,
 	}
 }

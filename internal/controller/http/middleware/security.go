@@ -2,12 +2,11 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
+	clientInterface "jwtgo/internal/interface/client"
 	"net/http"
-
-	"jwtgo/pkg/security"
 )
 
-func Authentication(tokenManager *security.TokenManager) gin.HandlerFunc {
+func Authentication(tokenManager clientInterface.TokenManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		accessToken, err := c.Request.Cookie("access_token")
 		if err != nil {

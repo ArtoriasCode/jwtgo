@@ -2,30 +2,30 @@ package service
 
 import (
 	"context"
-	"jwtgo/internal/adapter/mongodb/repository"
 	"jwtgo/internal/controller/http/dto"
 	"jwtgo/internal/controller/http/mapper"
 	customErr "jwtgo/internal/error"
+	clientInterface "jwtgo/internal/interface/client"
+	repositoryInterface "jwtgo/internal/interface/repository"
 	"jwtgo/pkg/logging"
-	"jwtgo/pkg/security"
 	"time"
 )
 
 type AuthService struct {
-	repository      *repository.UserRepository
-	tokenManager    *security.TokenManager
-	passwordManager *security.PasswordManager
+	userRepository  repositoryInterface.UserRepository
+	tokenManager    clientInterface.TokenManager
+	passwordManager clientInterface.PasswordManager
 	logger          *logging.Logger
 }
 
 func NewAuthService(
-	repository *repository.UserRepository,
-	tokenManager *security.TokenManager,
-	passwordManager *security.PasswordManager,
+	userRepository repositoryInterface.UserRepository,
+	tokenManager clientInterface.TokenManager,
+	passwordManager clientInterface.PasswordManager,
 	logger *logging.Logger,
 ) *AuthService {
 	return &AuthService{
-		repository:      repository,
+		userRepository:  userRepository,
 		tokenManager:    tokenManager,
 		passwordManager: passwordManager,
 		logger:          logger,
@@ -33,7 +33,7 @@ func NewAuthService(
 }
 
 func (s *AuthService) SignUp(ctx context.Context, userCredentialsDTO *dto.UserCredentialsDTO) (bool, error) {
-	existingUserEntity, err := s.repository.GetByEmail(ctx, userCredentialsDTO.Email)
+	existingUserEntity, err := s.userRepository.GetByEmail(ctx, userCredentialsDTO.Email)
 	if err != nil {
 		s.logger.Error("Error while getting user: ", err)
 		return false, customErr.NewInternalServerError("Failed to check user email")
@@ -60,7 +60,7 @@ func (s *AuthService) SignUp(ctx context.Context, userCredentialsDTO *dto.UserCr
 	userCreateEntity := mapper.MapUserCredentialsDTOToDomainUser(userCredentialsDTO)
 	userCreateEntity.Salt = localSalt
 
-	_, err = s.repository.Create(ctx, userCreateEntity)
+	_, err = s.userRepository.Create(ctx, userCreateEntity)
 	if err != nil {
 		s.logger.Error("Error while creating user: ", err)
 		return false, customErr.NewInternalServerError("Failed to create a user")
@@ -70,7 +70,7 @@ func (s *AuthService) SignUp(ctx context.Context, userCredentialsDTO *dto.UserCr
 }
 
 func (s *AuthService) SignIn(ctx context.Context, userCredentialsDTO *dto.UserCredentialsDTO) (*dto.UserTokensDTO, error) {
-	existingUserEntity, err := s.repository.GetByEmail(ctx, userCredentialsDTO.Email)
+	existingUserEntity, err := s.userRepository.GetByEmail(ctx, userCredentialsDTO.Email)
 	if err != nil {
 		s.logger.Error("Error while getting user: ", err)
 		return nil, customErr.NewInternalServerError("Failed to check user email")
@@ -94,7 +94,7 @@ func (s *AuthService) SignIn(ctx context.Context, userCredentialsDTO *dto.UserCr
 	existingUserEntity.RefreshToken = refreshToken
 	existingUserEntity.UpdatedAt = time.Now().UTC()
 
-	_, err = s.repository.Update(ctx, existingUserEntity.Id, existingUserEntity)
+	_, err = s.userRepository.Update(ctx, existingUserEntity.Id, existingUserEntity)
 	if err != nil {
 		s.logger.Error("Error while updating user: ", err)
 		return nil, customErr.NewInternalServerError("Token updating error")
@@ -110,7 +110,7 @@ func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserRefr
 		return nil, err
 	}
 
-	existingUserEntity, err := s.repository.GetById(ctx, claims.Id)
+	existingUserEntity, err := s.userRepository.GetById(ctx, claims.Id)
 	if err != nil {
 		s.logger.Error("Error while getting user: ", err)
 		return nil, customErr.NewInternalServerError("Failed to check user id")
@@ -133,7 +133,7 @@ func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserRefr
 	existingUserEntity.RefreshToken = refreshToken
 	existingUserEntity.UpdatedAt = time.Now().UTC()
 
-	_, err = s.repository.Update(ctx, claims.Id, existingUserEntity)
+	_, err = s.userRepository.Update(ctx, claims.Id, existingUserEntity)
 	if err != nil {
 		s.logger.Error("Error while updating user: ", err)
 		return nil, customErr.NewInternalServerError("Token updating error")

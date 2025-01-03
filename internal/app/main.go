@@ -10,6 +10,8 @@ import (
 	"jwtgo/internal/controller/http/middleware"
 	v1 "jwtgo/internal/controller/http/v1"
 	"jwtgo/internal/domain/service"
+	clientInterface "jwtgo/internal/interface/client"
+	serviceInterface "jwtgo/internal/interface/service"
 	"jwtgo/pkg/client"
 	"jwtgo/pkg/logging"
 	"jwtgo/pkg/security"
@@ -21,9 +23,9 @@ type Application struct {
 	Router          *gin.Engine
 	Validator       *validator.Validate
 	MongoClient     *mongo.Client
-	TokenManager    *security.TokenManager
-	PasswordManager *security.PasswordManager
-	AuthService     *service.AuthService
+	TokenManager    clientInterface.TokenManager
+	PasswordManager clientInterface.PasswordManager
+	AuthService     serviceInterface.AuthService
 }
 
 func NewApplication() *Application {
@@ -67,7 +69,7 @@ func (app *Application) InitializeServices() {
 }
 
 func (app *Application) InitializeControllers() {
-	authController := v1.NewAuthController(app.AuthService, app.Validator, app.PasswordManager, app.Logger)
+	authController := v1.NewAuthController(app.AuthService, app.Validator, app.Logger)
 	authController.Register(app.Router)
 
 	app.Router.Use(middleware.Authentication(app.TokenManager))
