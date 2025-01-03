@@ -2,38 +2,29 @@ package service
 
 import (
 	"context"
+	"jwtgo/internal/adapter/mongodb/repository"
 	"jwtgo/internal/controller/http/dto"
 	"jwtgo/internal/controller/http/mapper"
-	domainEntity "jwtgo/internal/domain/entity"
 	customErr "jwtgo/internal/error"
 	"jwtgo/pkg/logging"
 	"jwtgo/pkg/security"
 	"time"
 )
 
-type UserRepository interface {
-	GetById(ctx context.Context, id string) (*domainEntity.User, error)
-	GetByEmail(ctx context.Context, email string) (*domainEntity.User, error)
-	GetAll(ctx context.Context) ([]*domainEntity.User, error)
-	Create(ctx context.Context, domainUser *domainEntity.User) (bool, error)
-	Update(ctx context.Context, id string, domainUser *domainEntity.User) (bool, error)
-	Delete(ctx context.Context, id string) (bool, error)
-}
-
-type UserService struct {
-	repository      UserRepository
+type AuthService struct {
+	repository      *repository.UserRepository
 	tokenManager    *security.TokenManager
 	passwordManager *security.PasswordManager
 	logger          *logging.Logger
 }
 
-func NewUserService(
-	repository UserRepository,
+func NewAuthService(
+	repository *repository.UserRepository,
 	tokenManager *security.TokenManager,
 	passwordManager *security.PasswordManager,
 	logger *logging.Logger,
-) *UserService {
-	return &UserService{
+) *AuthService {
+	return &AuthService{
 		repository:      repository,
 		tokenManager:    tokenManager,
 		passwordManager: passwordManager,
@@ -41,7 +32,7 @@ func NewUserService(
 	}
 }
 
-func (s *UserService) SignUp(ctx context.Context, userCredentialsDTO *dto.UserCredentialsDTO) (bool, error) {
+func (s *AuthService) SignUp(ctx context.Context, userCredentialsDTO *dto.UserCredentialsDTO) (bool, error) {
 	existingUserEntity, err := s.repository.GetByEmail(ctx, userCredentialsDTO.Email)
 	if err != nil {
 		s.logger.Error("Error while getting user: ", err)
@@ -78,7 +69,7 @@ func (s *UserService) SignUp(ctx context.Context, userCredentialsDTO *dto.UserCr
 	return true, nil
 }
 
-func (s *UserService) SignIn(ctx context.Context, userCredentialsDTO *dto.UserCredentialsDTO) (*dto.UserTokensDTO, error) {
+func (s *AuthService) SignIn(ctx context.Context, userCredentialsDTO *dto.UserCredentialsDTO) (*dto.UserTokensDTO, error) {
 	existingUserEntity, err := s.repository.GetByEmail(ctx, userCredentialsDTO.Email)
 	if err != nil {
 		s.logger.Error("Error while getting user: ", err)
@@ -112,7 +103,7 @@ func (s *UserService) SignIn(ctx context.Context, userCredentialsDTO *dto.UserCr
 	return mapper.MapToUserTokensDTO(accessToken, refreshToken), nil
 }
 
-func (s *UserService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserRefreshTokenDTO) (*dto.UserTokensDTO, error) {
+func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserRefreshTokenDTO) (*dto.UserTokensDTO, error) {
 	claims, err := s.tokenManager.ValidateToken(refreshTokenDTO.RefreshToken)
 	if err != nil {
 		s.logger.Error("Error while checking refresh token: ", err)

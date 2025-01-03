@@ -21,20 +21,20 @@ import (
 )
 
 type AuthController struct {
-	userService      *service.UserService
+	authService      *service.AuthService
 	requestValidator *validator.Validate
 	passwordManager  *security.PasswordManager
 	logger           *logging.Logger
 }
 
 func NewAuthController(
-	userService *service.UserService,
+	authService *service.AuthService,
 	requestValidator *validator.Validate,
 	passwordManager *security.PasswordManager,
 	logger *logging.Logger,
 ) *AuthController {
 	return &AuthController{
-		userService:      userService,
+		authService:      authService,
 		requestValidator: requestValidator,
 		passwordManager:  passwordManager,
 		logger:           logger,
@@ -54,7 +54,7 @@ func (ac *AuthController) SignUp() gin.HandlerFunc {
 
 		userCredentialsDTO := c.MustGet("validatedBody").(dto.UserCredentialsDTO)
 
-		_, err := ac.userService.SignUp(ctx, &userCredentialsDTO)
+		_, err := ac.authService.SignUp(ctx, &userCredentialsDTO)
 		if err != nil {
 			var alreadyExistsErr *customErr.AlreadyExistsError
 
@@ -79,7 +79,7 @@ func (ac *AuthController) SignIn() gin.HandlerFunc {
 
 		userCredentialsDTO := c.MustGet("validatedBody").(dto.UserCredentialsDTO)
 
-		userTokensDTO, err := ac.userService.SignIn(ctx, &userCredentialsDTO)
+		userTokensDTO, err := ac.authService.SignIn(ctx, &userCredentialsDTO)
 		if err != nil {
 			var invalidCredentialsErr *customErr.InvalidCredentialsError
 
@@ -115,7 +115,7 @@ func (ac *AuthController) Refresh() gin.HandlerFunc {
 
 		refreshTokenDTO := mapper.MapToUserRefreshTokenDTO(refreshToken)
 
-		userTokensDTO, err := ac.userService.Refresh(ctx, refreshTokenDTO)
+		userTokensDTO, err := ac.authService.Refresh(ctx, refreshTokenDTO)
 		if err != nil {
 			var invalidRefreshTokenError *customErr.InvalidRefreshTokenError
 			var userNotFoundError *customErr.UserNotFoundError
