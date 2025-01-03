@@ -1,8 +1,8 @@
 package service
 
 import (
+	customErr "jwtgo/internal/app/error"
 	"jwtgo/internal/app/schema"
-	customErr "jwtgo/internal/error"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"

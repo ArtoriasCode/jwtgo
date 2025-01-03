@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
-	clientInterface "jwtgo/internal/interface/service"
+	clientInterface "jwtgo/internal/app/interface/service"
 	"net/http"
 )
 

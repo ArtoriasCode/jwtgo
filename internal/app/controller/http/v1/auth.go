@@ -6,7 +6,8 @@ import (
 	"jwtgo/internal/app/controller/http/dto"
 	"jwtgo/internal/app/controller/http/mapper"
 	"jwtgo/internal/app/controller/http/middleware"
-	serviceInterface "jwtgo/internal/interface/service"
+	customErr "jwtgo/internal/app/error"
+	serviceInterface "jwtgo/internal/app/interface/service"
 	"jwtgo/pkg/request/schema"
 	"net/http"
 	"time"
@@ -14,7 +15,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 
-	customErr "jwtgo/internal/error"
 	"jwtgo/pkg/logging"
 	"jwtgo/pkg/request"
 )

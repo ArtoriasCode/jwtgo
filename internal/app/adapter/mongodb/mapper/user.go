@@ -5,7 +5,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	mongoEntity "jwtgo/internal/app/adapter/mongodb/entity"
 	domainEntity "jwtgo/internal/app/entity"
-	customErr "jwtgo/internal/error"
+	customErr "jwtgo/internal/app/error"
 )
 
 func MapMongoUserToDomainUser(mongoUser *mongoEntity.User) *domainEntity.User {
