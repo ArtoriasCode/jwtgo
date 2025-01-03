@@ -113,10 +113,11 @@ func (ac *AuthController) Refresh() gin.HandlerFunc {
 
 		userTokensDTO, err := ac.authService.Refresh(ctx, refreshTokenDTO)
 		if err != nil {
-			var invalidRefreshTokenError *customErr.InvalidRefreshTokenError
+			var invalidTokenError *customErr.InvalidTokenError
+			var expiredTokenError *customErr.ExpiredTokenError
 			var userNotFoundError *customErr.UserNotFoundError
 
-			if errors.As(err, &invalidRefreshTokenError) || errors.As(err, &userNotFoundError) {
+			if errors.As(err, &invalidTokenError) || errors.As(err, &expiredTokenError) || errors.As(err, &userNotFoundError) {
 				c.JSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
 			} else {
 				ac.logger.Error("Error while refreshing: ", err)

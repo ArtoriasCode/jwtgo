@@ -107,7 +107,6 @@ func (s *AuthService) SignIn(ctx context.Context, userCredentialsDTO *dto.UserCr
 func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserRefreshTokenDTO) (*dto.UserTokensDTO, error) {
 	claims, err := s.jwtService.ValidateToken(refreshTokenDTO.RefreshToken)
 	if err != nil {
-		s.logger.Error("Error while checking refresh token: ", err)
 		return nil, err
 	}
 
@@ -122,7 +121,7 @@ func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserRefr
 	}
 
 	if refreshTokenDTO.RefreshToken != existingUserEntity.RefreshToken {
-		return nil, customErr.NewInvalidRefreshTokenError("Invalid refresh token")
+		return nil, customErr.NewInvalidTokenError("Invalid refresh token")
 	}
 
 	accessToken, refreshToken, err := s.jwtService.GenerateTokens(existingUserEntity.Id)

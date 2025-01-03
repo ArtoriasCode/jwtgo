@@ -35,15 +35,3 @@ func NewUserNotFoundError(message string) error {
 func (e *UserNotFoundError) Error() string {
 	return e.message
 }
-
-type InvalidRefreshTokenError struct {
-	message string
-}
-
-func NewInvalidRefreshTokenError(message string) error {
-	return &InvalidRefreshTokenError{message: message}
-}
-
-func (e *InvalidRefreshTokenError) Error() string {
-	return e.message
-}

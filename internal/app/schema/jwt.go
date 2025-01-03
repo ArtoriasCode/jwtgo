@@ -1,10 +1,10 @@
 package schema
 
 import (
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type Claims struct {
 	Id string `json:"sub"`
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }

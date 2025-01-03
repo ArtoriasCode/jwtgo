@@ -1,9 +1,10 @@
 package service
 
 import (
+	"errors"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v5"
 
 	customErr "jwtgo/internal/app/error"
 	"jwtgo/internal/app/schema"
@@ -26,15 +27,15 @@ func NewJWTService(secretKey string, accessLifetime, refreshLifetime int) *JWTSe
 func (s *JWTService) GenerateTokens(id string) (string, string, error) {
 	accessClaims := &schema.Claims{
 		Id: id,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().UTC().Add(time.Minute * time.Duration(s.accessLifetime)).Unix(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(time.Minute * time.Duration(s.accessLifetime))),
 		},
 	}
 
 	refreshClaims := &schema.Claims{
 		Id: id,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().UTC().Add(time.Minute * time.Duration(s.refreshLifetime)).Unix(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(time.Minute * time.Duration(s.refreshLifetime))),
 		},
 	}
 
@@ -61,16 +62,16 @@ func (s *JWTService) ValidateToken(signedToken string) (*schema.Claims, error) {
 	)
 
 	if err != nil {
-		return nil, customErr.NewInvalidTokenError("Token is invalid")
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			return nil, customErr.NewExpiredTokenError("Token is expired")
+		} else {
+			return nil, customErr.NewInvalidTokenError("Token is invalid")
+		}
 	}
 
 	claims, ok := token.Claims.(*schema.Claims)
 	if !ok {
 		return nil, customErr.NewInvalidTokenError("Token is invalid")
-	}
-
-	if claims.ExpiresAt < time.Now().UTC().Unix() {
-		return nil, customErr.NewExpiredTokenError("Token is expired")
 	}
 
 	return claims, nil
