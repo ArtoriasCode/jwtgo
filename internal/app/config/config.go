@@ -1,8 +1,9 @@
 package config
 
 import (
-	"github.com/ilyakaznacheev/cleanenv"
 	"sync"
+
+	"github.com/ilyakaznacheev/cleanenv"
 
 	"jwtgo/pkg/logging"
 )
@@ -34,7 +35,7 @@ var once sync.Once
 func GetConfig(logger *logging.Logger) *Config {
 	once.Do(func() {
 		instance = &Config{}
-		if err := cleanenv.ReadConfig("config.yaml", instance); err != nil {
+		if err := cleanenv.ReadConfig("configs/config.yaml", instance); err != nil {
 			help, _ := cleanenv.GetDescription(instance, nil)
 			logger.Info(help)
 			logger.Fatal(err)

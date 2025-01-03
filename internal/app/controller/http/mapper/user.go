@@ -1,9 +1,10 @@
 package mapper
 
 import (
+	"time"
+
 	"jwtgo/internal/app/controller/http/dto"
 	"jwtgo/internal/app/entity"
-	"time"
 )
 
 func MapToUserRefreshTokenDTO(refreshToken string) *dto.UserRefreshTokenDTO {

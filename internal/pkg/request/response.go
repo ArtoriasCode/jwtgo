@@ -1,11 +1,12 @@
 package request
 
 import (
-	"jwtgo/pkg/request/schema"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+
+	"jwtgo/internal/pkg/request/schema"
 )
 
 func SetCookies(c *gin.Context, cookies []schema.Cookie) {

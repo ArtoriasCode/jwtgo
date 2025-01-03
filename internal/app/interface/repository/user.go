@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+
 	domainEntity "jwtgo/internal/app/entity"
 )
 

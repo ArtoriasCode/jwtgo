@@ -1,9 +1,11 @@
 package middleware
 
 import (
-	"github.com/gin-gonic/gin"
-	clientInterface "jwtgo/internal/app/interface/service"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+
+	clientInterface "jwtgo/internal/app/interface/service"
 )
 
 func Authentication(jwtService clientInterface.JWTService) gin.HandlerFunc {

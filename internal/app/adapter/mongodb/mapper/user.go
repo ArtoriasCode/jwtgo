@@ -3,6 +3,7 @@ package mapper
 import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+
 	mongoEntity "jwtgo/internal/app/adapter/mongodb/entity"
 	domainEntity "jwtgo/internal/app/entity"
 	customErr "jwtgo/internal/app/error"

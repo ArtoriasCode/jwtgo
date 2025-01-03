@@ -14,4 +14,4 @@ engine
 .DS_Store
 .vendor
 .env
-config.yaml
+configs/config.yaml

@@ -3,20 +3,20 @@ package v1
 import (
 	"context"
 	"errors"
-	"jwtgo/internal/app/controller/http/dto"
-	"jwtgo/internal/app/controller/http/mapper"
-	"jwtgo/internal/app/controller/http/middleware"
-	customErr "jwtgo/internal/app/error"
-	serviceInterface "jwtgo/internal/app/interface/service"
-	"jwtgo/pkg/request/schema"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 
+	"jwtgo/internal/app/controller/http/dto"
+	"jwtgo/internal/app/controller/http/mapper"
+	"jwtgo/internal/app/controller/http/middleware"
+	customErr "jwtgo/internal/app/error"
+	serviceInterface "jwtgo/internal/app/interface/service"
+	"jwtgo/internal/pkg/request"
+	"jwtgo/internal/pkg/request/schema"
 	"jwtgo/pkg/logging"
-	"jwtgo/pkg/request"
 )
 
 type AuthController struct {

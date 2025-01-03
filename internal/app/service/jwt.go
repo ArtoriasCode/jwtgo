@@ -1,11 +1,12 @@
 package service
 
 import (
-	customErr "jwtgo/internal/app/error"
-	"jwtgo/internal/app/schema"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+
+	customErr "jwtgo/internal/app/error"
+	"jwtgo/internal/app/schema"
 )
 
 type JWTService struct {

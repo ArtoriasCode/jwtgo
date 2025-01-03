@@ -4,12 +4,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/mongo"
+
 	"jwtgo/internal/app/adapter/mongodb/repository"
+	"jwtgo/internal/app/config"
 	"jwtgo/internal/app/controller/http/middleware"
 	"jwtgo/internal/app/controller/http/v1"
 	serviceInterface "jwtgo/internal/app/interface/service"
 	"jwtgo/internal/app/service"
-	"jwtgo/internal/config"
 	"jwtgo/pkg/client"
 	"jwtgo/pkg/logging"
 )

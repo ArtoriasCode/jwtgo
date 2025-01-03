@@ -2,13 +2,14 @@ package service
 
 import (
 	"context"
+	"time"
+
 	"jwtgo/internal/app/controller/http/dto"
 	"jwtgo/internal/app/controller/http/mapper"
 	customErr "jwtgo/internal/app/error"
 	repositoryInterface "jwtgo/internal/app/interface/repository"
 	serviceInterface "jwtgo/internal/app/interface/service"
 	"jwtgo/pkg/logging"
-	"time"
 )
 
 type AuthService struct {
