@@ -6,22 +6,22 @@ import (
 	"jwtgo/internal/app/controller/http/mapper"
 	customErr "jwtgo/internal/app/error"
 	repositoryInterface "jwtgo/internal/app/interface/repository"
-	service2 "jwtgo/internal/app/interface/service"
+	serviceInterface "jwtgo/internal/app/interface/service"
 	"jwtgo/pkg/logging"
 	"time"
 )
 
 type AuthService struct {
 	userRepository  repositoryInterface.UserRepository
-	jwtService      service2.JWTService
-	passwordService service2.PasswordService
+	jwtService      serviceInterface.JWTService
+	passwordService serviceInterface.PasswordService
 	logger          *logging.Logger
 }
 
 func NewAuthService(
 	userRepository repositoryInterface.UserRepository,
-	jwtService service2.JWTService,
-	passwordService service2.PasswordService,
+	jwtService serviceInterface.JWTService,
+	passwordService serviceInterface.PasswordService,
 	logger *logging.Logger,
 ) *AuthService {
 	return &AuthService{

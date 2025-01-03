@@ -7,7 +7,7 @@ import (
 	"jwtgo/internal/app/adapter/mongodb/repository"
 	"jwtgo/internal/app/controller/http/middleware"
 	"jwtgo/internal/app/controller/http/v1"
-	service2 "jwtgo/internal/app/interface/service"
+	serviceInterface "jwtgo/internal/app/interface/service"
 	"jwtgo/internal/app/service"
 	"jwtgo/internal/config"
 	"jwtgo/pkg/client"
@@ -20,9 +20,9 @@ type Application struct {
 	Router          *gin.Engine
 	Validator       *validator.Validate
 	MongoClient     *mongo.Client
-	JWTService      service2.JWTService
-	PasswordService service2.PasswordService
-	AuthService     service2.AuthService
+	JWTService      serviceInterface.JWTService
+	PasswordService serviceInterface.PasswordService
+	AuthService     serviceInterface.AuthService
 }
 
 func NewApplication() *Application {
