@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func Authentication(tokenManager clientInterface.TokenService) gin.HandlerFunc {
+func Authentication(jwtService clientInterface.JWTService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		accessToken, err := c.Request.Cookie("access_token")
 		if err != nil {
@@ -15,7 +15,7 @@ func Authentication(tokenManager clientInterface.TokenService) gin.HandlerFunc {
 			return
 		}
 
-		claims, err := tokenManager.ValidateToken(accessToken.Value)
+		claims, err := jwtService.ValidateToken(accessToken.Value)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			c.Abort()

@@ -20,7 +20,7 @@ type Application struct {
 	Router          *gin.Engine
 	Validator       *validator.Validate
 	MongoClient     *mongo.Client
-	TokenService    serviceInterface.TokenService
+	JWTService      serviceInterface.JWTService
 	PasswordService serviceInterface.PasswordService
 	AuthService     serviceInterface.AuthService
 }
@@ -59,18 +59,18 @@ func (app *Application) InitializeClients() {
 }
 
 func (app *Application) InitializeServices() {
-	app.TokenService = service.NewTokenService(app.Config.Security.Secret, app.Config.Security.AccessLifetime, app.Config.Security.RefreshLifetime)
+	app.JWTService = service.NewJWTService(app.Config.Security.Secret, app.Config.Security.AccessLifetime, app.Config.Security.RefreshLifetime)
 	app.PasswordService = service.NewPasswordService(app.Config.Security.BcryptCost, app.Config.Security.Salt)
 
 	userRepository := repository.NewUserRepository(app.MongoClient, app.Config.MongoDB.Database, "users", app.Logger)
-	app.AuthService = service.NewAuthService(userRepository, app.TokenService, app.PasswordService, app.Logger)
+	app.AuthService = service.NewAuthService(userRepository, app.JWTService, app.PasswordService, app.Logger)
 }
 
 func (app *Application) InitializeControllers() {
 	authController := v1.NewAuthController(app.AuthService, app.Validator, app.Logger)
 	authController.Register(app.Router)
 
-	app.Router.Use(middleware.Authentication(app.TokenService))
+	app.Router.Use(middleware.Authentication(app.JWTService))
 }
 
 func (app *Application) Run() {

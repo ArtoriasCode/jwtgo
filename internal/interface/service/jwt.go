@@ -4,7 +4,7 @@ import (
 	"jwtgo/internal/app/schema"
 )
 
-type TokenService interface {
+type JWTService interface {
 	GenerateTokens(id string) (string, string, error)
 	ValidateToken(signedToken string) (*schema.Claims, error)
 }

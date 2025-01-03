@@ -6,28 +6,28 @@ import (
 	"jwtgo/internal/app/controller/http/mapper"
 	customErr "jwtgo/internal/error"
 	repositoryInterface "jwtgo/internal/interface/repository"
-	service2 "jwtgo/internal/interface/service"
+	serviceInterface "jwtgo/internal/interface/service"
 	"jwtgo/pkg/logging"
 	"time"
 )
 
 type AuthService struct {
 	userRepository  repositoryInterface.UserRepository
-	tokenManager    service2.TokenService
-	passwordManager service2.PasswordService
+	jwtService      serviceInterface.JWTService
+	passwordService serviceInterface.PasswordService
 	logger          *logging.Logger
 }
 
 func NewAuthService(
 	userRepository repositoryInterface.UserRepository,
-	tokenManager service2.TokenService,
-	passwordManager service2.PasswordService,
+	jwtService serviceInterface.JWTService,
+	passwordService serviceInterface.PasswordService,
 	logger *logging.Logger,
 ) *AuthService {
 	return &AuthService{
 		userRepository:  userRepository,
-		tokenManager:    tokenManager,
-		passwordManager: passwordManager,
+		jwtService:      jwtService,
+		passwordService: passwordService,
 		logger:          logger,
 	}
 }
@@ -43,13 +43,13 @@ func (s *AuthService) SignUp(ctx context.Context, userCredentialsDTO *dto.UserCr
 		return false, customErr.NewAlreadyExistsError("Email already exists")
 	}
 
-	localSalt, err := s.passwordManager.GenerateSalt(32)
+	localSalt, err := s.passwordService.GenerateSalt(32)
 	if err != nil {
 		s.logger.Error("Error while generating local salt: ", err)
 		return false, customErr.NewInternalServerError("Failed to create a user")
 	}
 
-	hashedPassword, err := s.passwordManager.HashPassword(userCredentialsDTO.Password, localSalt)
+	hashedPassword, err := s.passwordService.HashPassword(userCredentialsDTO.Password, localSalt)
 	if err != nil {
 		s.logger.Error("Error while hashing password: ", err)
 		return false, customErr.NewInternalServerError("Failed to create a user")
@@ -80,12 +80,12 @@ func (s *AuthService) SignIn(ctx context.Context, userCredentialsDTO *dto.UserCr
 		return nil, customErr.NewInvalidCredentialsError("Invalid login or password")
 	}
 
-	passwordIsValid := s.passwordManager.VerifyPassword(userCredentialsDTO.Password, existingUserEntity.Password, existingUserEntity.Salt)
+	passwordIsValid := s.passwordService.VerifyPassword(userCredentialsDTO.Password, existingUserEntity.Password, existingUserEntity.Salt)
 	if !passwordIsValid {
 		return nil, customErr.NewInvalidCredentialsError("Invalid login or password")
 	}
 
-	accessToken, refreshToken, err := s.tokenManager.GenerateTokens(existingUserEntity.Id)
+	accessToken, refreshToken, err := s.jwtService.GenerateTokens(existingUserEntity.Id)
 	if err != nil {
 		s.logger.Error("Error while generating tokens: ", err)
 		return nil, customErr.NewInternalServerError("Token generation error")
@@ -104,7 +104,7 @@ func (s *AuthService) SignIn(ctx context.Context, userCredentialsDTO *dto.UserCr
 }
 
 func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserRefreshTokenDTO) (*dto.UserTokensDTO, error) {
-	claims, err := s.tokenManager.ValidateToken(refreshTokenDTO.RefreshToken)
+	claims, err := s.jwtService.ValidateToken(refreshTokenDTO.RefreshToken)
 	if err != nil {
 		s.logger.Error("Error while checking refresh token: ", err)
 		return nil, err
@@ -124,7 +124,7 @@ func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserRefr
 		return nil, customErr.NewInvalidRefreshTokenError("Invalid refresh token")
 	}
 
-	accessToken, refreshToken, err := s.tokenManager.GenerateTokens(existingUserEntity.Id)
+	accessToken, refreshToken, err := s.jwtService.GenerateTokens(existingUserEntity.Id)
 	if err != nil {
 		s.logger.Error("Error while generating tokens: ", err)
 		return nil, customErr.NewInternalServerError("Token generation error")

@@ -20,7 +20,7 @@ func NewPasswordService(hashingCost int, globalSalt string) *PasswordService {
 	}
 }
 
-func (pm *PasswordService) GenerateSalt(length int) (string, error) {
+func (s *PasswordService) GenerateSalt(length int) (string, error) {
 	randomBytes := make([]byte, length)
 	_, err := rand.Read(randomBytes)
 	if err != nil {
@@ -30,13 +30,13 @@ func (pm *PasswordService) GenerateSalt(length int) (string, error) {
 	return hex.EncodeToString(randomBytes), nil
 }
 
-func (pm *PasswordService) HashPassword(password, localSalt string) (string, error) {
-	saltedPassword := localSalt + password + pm.globalSalt
+func (s *PasswordService) HashPassword(password, localSalt string) (string, error) {
+	saltedPassword := localSalt + password + s.globalSalt
 
 	hash := sha256.Sum256([]byte(saltedPassword))
 	preHashedPassword := hex.EncodeToString(hash[:])
 
-	bytes, err := bcrypt.GenerateFromPassword([]byte(preHashedPassword), pm.hashingCost)
+	bytes, err := bcrypt.GenerateFromPassword([]byte(preHashedPassword), s.hashingCost)
 	if err != nil {
 		return "", err
 	}
@@ -44,8 +44,8 @@ func (pm *PasswordService) HashPassword(password, localSalt string) (string, err
 	return string(bytes), nil
 }
 
-func (pm *PasswordService) VerifyPassword(plainPassword, hashedPassword, localSalt string) bool {
-	saltedPassword := localSalt + plainPassword + pm.globalSalt
+func (s *PasswordService) VerifyPassword(plainPassword, hashedPassword, localSalt string) bool {
+	saltedPassword := localSalt + plainPassword + s.globalSalt
 
 	hash := sha256.Sum256([]byte(saltedPassword))
 	preHashedPassword := hex.EncodeToString(hash[:])

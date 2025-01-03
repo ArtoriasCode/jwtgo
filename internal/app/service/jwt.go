@@ -8,41 +8,41 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-type TokenService struct {
+type JWTService struct {
 	secretKey       string
 	accessLifetime  int
 	refreshLifetime int
 }
 
-func NewTokenService(secretKey string, accessLifetime, refreshLifetime int) *TokenService {
-	return &TokenService{
+func NewJWTService(secretKey string, accessLifetime, refreshLifetime int) *JWTService {
+	return &JWTService{
 		secretKey:       secretKey,
 		accessLifetime:  accessLifetime,
 		refreshLifetime: refreshLifetime,
 	}
 }
 
-func (tm *TokenService) GenerateTokens(id string) (string, string, error) {
+func (s *JWTService) GenerateTokens(id string) (string, string, error) {
 	accessClaims := &schema.Claims{
 		Id: id,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().UTC().Add(time.Minute * time.Duration(tm.accessLifetime)).Unix(),
+			ExpiresAt: time.Now().UTC().Add(time.Minute * time.Duration(s.accessLifetime)).Unix(),
 		},
 	}
 
 	refreshClaims := &schema.Claims{
 		Id: id,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().UTC().Add(time.Minute * time.Duration(tm.refreshLifetime)).Unix(),
+			ExpiresAt: time.Now().UTC().Add(time.Minute * time.Duration(s.refreshLifetime)).Unix(),
 		},
 	}
 
-	accessToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims).SignedString([]byte(tm.secretKey))
+	accessToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims).SignedString([]byte(s.secretKey))
 	if err != nil {
 		return "", "", err
 	}
 
-	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString([]byte(tm.secretKey))
+	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString([]byte(s.secretKey))
 	if err != nil {
 		return "", "", err
 	}
@@ -50,12 +50,12 @@ func (tm *TokenService) GenerateTokens(id string) (string, string, error) {
 	return accessToken, refreshToken, nil
 }
 
-func (tm *TokenService) ValidateToken(signedToken string) (*schema.Claims, error) {
+func (s *JWTService) ValidateToken(signedToken string) (*schema.Claims, error) {
 	token, err := jwt.ParseWithClaims(
 		signedToken,
 		&schema.Claims{},
 		func(token *jwt.Token) (interface{}, error) {
-			return []byte(tm.secretKey), nil
+			return []byte(s.secretKey), nil
 		},
 	)
 
