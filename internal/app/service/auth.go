@@ -2,26 +2,26 @@ package service
 
 import (
 	"context"
-	"jwtgo/internal/controller/http/dto"
-	"jwtgo/internal/controller/http/mapper"
+	"jwtgo/internal/app/controller/http/dto"
+	"jwtgo/internal/app/controller/http/mapper"
 	customErr "jwtgo/internal/error"
-	clientInterface "jwtgo/internal/interface/client"
 	repositoryInterface "jwtgo/internal/interface/repository"
+	service2 "jwtgo/internal/interface/service"
 	"jwtgo/pkg/logging"
 	"time"
 )
 
 type AuthService struct {
 	userRepository  repositoryInterface.UserRepository
-	tokenManager    clientInterface.TokenManager
-	passwordManager clientInterface.PasswordManager
+	tokenManager    service2.TokenService
+	passwordManager service2.PasswordService
 	logger          *logging.Logger
 }
 
 func NewAuthService(
 	userRepository repositoryInterface.UserRepository,
-	tokenManager clientInterface.TokenManager,
-	passwordManager clientInterface.PasswordManager,
+	tokenManager service2.TokenService,
+	passwordManager service2.PasswordService,
 	logger *logging.Logger,
 ) *AuthService {
 	return &AuthService{

@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"jwtgo/internal/controller/http/dto"
+	"jwtgo/internal/app/controller/http/dto"
 )
 
 type AuthService interface {

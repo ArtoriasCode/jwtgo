@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	domainEntity "jwtgo/internal/domain/entity"
+	domainEntity "jwtgo/internal/app/entity"
 )
 
 type UserRepository interface {

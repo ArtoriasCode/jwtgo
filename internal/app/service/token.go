@@ -1,28 +1,28 @@
-package security
+package service
 
 import (
-	"jwtgo/pkg/security/schema"
+	"jwtgo/internal/app/schema"
+	customErr "jwtgo/internal/error"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	customErr "jwtgo/pkg/security/error"
 )
 
-type TokenManager struct {
+type TokenService struct {
 	secretKey       string
 	accessLifetime  int
 	refreshLifetime int
 }
 
-func NewTokenManager(secretKey string, accessLifetime, refreshLifetime int) *TokenManager {
-	return &TokenManager{
+func NewTokenService(secretKey string, accessLifetime, refreshLifetime int) *TokenService {
+	return &TokenService{
 		secretKey:       secretKey,
 		accessLifetime:  accessLifetime,
 		refreshLifetime: refreshLifetime,
 	}
 }
 
-func (tm *TokenManager) GenerateTokens(id string) (string, string, error) {
+func (tm *TokenService) GenerateTokens(id string) (string, string, error) {
 	accessClaims := &schema.Claims{
 		Id: id,
 		StandardClaims: jwt.StandardClaims{
@@ -50,7 +50,7 @@ func (tm *TokenManager) GenerateTokens(id string) (string, string, error) {
 	return accessToken, refreshToken, nil
 }
 
-func (tm *TokenManager) ValidateToken(signedToken string) (*schema.Claims, error) {
+func (tm *TokenService) ValidateToken(signedToken string) (*schema.Claims, error) {
 	token, err := jwt.ParseWithClaims(
 		signedToken,
 		&schema.Claims{},

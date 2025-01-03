@@ -1,4 +1,4 @@
-package security
+package service
 
 import (
 	"crypto/rand"
@@ -8,19 +8,19 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type PasswordManager struct {
+type PasswordService struct {
 	hashingCost int
 	globalSalt  string
 }
 
-func NewPasswordManager(hashingCost int, globalSalt string) *PasswordManager {
-	return &PasswordManager{
+func NewPasswordService(hashingCost int, globalSalt string) *PasswordService {
+	return &PasswordService{
 		hashingCost: hashingCost,
 		globalSalt:  globalSalt,
 	}
 }
 
-func (pm *PasswordManager) GenerateSalt(length int) (string, error) {
+func (pm *PasswordService) GenerateSalt(length int) (string, error) {
 	randomBytes := make([]byte, length)
 	_, err := rand.Read(randomBytes)
 	if err != nil {
@@ -30,7 +30,7 @@ func (pm *PasswordManager) GenerateSalt(length int) (string, error) {
 	return hex.EncodeToString(randomBytes), nil
 }
 
-func (pm *PasswordManager) HashPassword(password, localSalt string) (string, error) {
+func (pm *PasswordService) HashPassword(password, localSalt string) (string, error) {
 	saltedPassword := localSalt + password + pm.globalSalt
 
 	hash := sha256.Sum256([]byte(saltedPassword))
@@ -44,7 +44,7 @@ func (pm *PasswordManager) HashPassword(password, localSalt string) (string, err
 	return string(bytes), nil
 }
 
-func (pm *PasswordManager) VerifyPassword(plainPassword, hashedPassword, localSalt string) bool {
+func (pm *PasswordService) VerifyPassword(plainPassword, hashedPassword, localSalt string) bool {
 	saltedPassword := localSalt + plainPassword + pm.globalSalt
 
 	hash := sha256.Sum256([]byte(saltedPassword))

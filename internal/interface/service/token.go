@@ -1,10 +1,10 @@
-package client
+package service
 
 import (
-	"jwtgo/pkg/security/schema"
+	"jwtgo/internal/app/schema"
 )
 
-type TokenManager interface {
+type TokenService interface {
 	GenerateTokens(id string) (string, string, error)
 	ValidateToken(signedToken string) (*schema.Claims, error)
 }

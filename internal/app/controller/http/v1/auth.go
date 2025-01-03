@@ -3,7 +3,9 @@ package v1
 import (
 	"context"
 	"errors"
-	"jwtgo/internal/controller/http/mapper"
+	"jwtgo/internal/app/controller/http/dto"
+	"jwtgo/internal/app/controller/http/mapper"
+	"jwtgo/internal/app/controller/http/middleware"
 	serviceInterface "jwtgo/internal/interface/service"
 	"jwtgo/pkg/request/schema"
 	"net/http"
@@ -12,8 +14,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 
-	"jwtgo/internal/controller/http/dto"
-	"jwtgo/internal/controller/http/middleware"
 	customErr "jwtgo/internal/error"
 	"jwtgo/pkg/logging"
 	"jwtgo/pkg/request"

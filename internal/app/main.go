@@ -4,17 +4,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/mongo"
-
-	"jwtgo/internal/adapter/mongodb/repository"
+	"jwtgo/internal/app/adapter/mongodb/repository"
+	"jwtgo/internal/app/controller/http/middleware"
+	"jwtgo/internal/app/controller/http/v1"
+	"jwtgo/internal/app/service"
 	"jwtgo/internal/config"
-	"jwtgo/internal/controller/http/middleware"
-	v1 "jwtgo/internal/controller/http/v1"
-	"jwtgo/internal/domain/service"
-	clientInterface "jwtgo/internal/interface/client"
 	serviceInterface "jwtgo/internal/interface/service"
 	"jwtgo/pkg/client"
 	"jwtgo/pkg/logging"
-	"jwtgo/pkg/security"
 )
 
 type Application struct {
@@ -23,8 +20,8 @@ type Application struct {
 	Router          *gin.Engine
 	Validator       *validator.Validate
 	MongoClient     *mongo.Client
-	TokenManager    clientInterface.TokenManager
-	PasswordManager clientInterface.PasswordManager
+	TokenService    serviceInterface.TokenService
+	PasswordService serviceInterface.PasswordService
 	AuthService     serviceInterface.AuthService
 }
 
@@ -59,20 +56,21 @@ func (app *Application) InitializeRouter() {
 func (app *Application) InitializeClients() {
 	app.Validator = validator.New()
 	app.MongoClient = client.NewMongodbClient(app.Config.MongoDB.Url, app.Logger).Connect()
-	app.TokenManager = security.NewTokenManager(app.Config.Security.Secret, app.Config.Security.AccessLifetime, app.Config.Security.RefreshLifetime)
-	app.PasswordManager = security.NewPasswordManager(app.Config.Security.BcryptCost, app.Config.Security.Salt)
 }
 
 func (app *Application) InitializeServices() {
+	app.TokenService = service.NewTokenService(app.Config.Security.Secret, app.Config.Security.AccessLifetime, app.Config.Security.RefreshLifetime)
+	app.PasswordService = service.NewPasswordService(app.Config.Security.BcryptCost, app.Config.Security.Salt)
+
 	userRepository := repository.NewUserRepository(app.MongoClient, app.Config.MongoDB.Database, "users", app.Logger)
-	app.AuthService = service.NewAuthService(userRepository, app.TokenManager, app.PasswordManager, app.Logger)
+	app.AuthService = service.NewAuthService(userRepository, app.TokenService, app.PasswordService, app.Logger)
 }
 
 func (app *Application) InitializeControllers() {
 	authController := v1.NewAuthController(app.AuthService, app.Validator, app.Logger)
 	authController.Register(app.Router)
 
-	app.Router.Use(middleware.Authentication(app.TokenManager))
+	app.Router.Use(middleware.Authentication(app.TokenService))
 }
 
 func (app *Application) Run() {
