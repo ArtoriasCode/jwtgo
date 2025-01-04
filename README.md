@@ -54,7 +54,7 @@ cd jwtgo
 ## Examples of API requests and responses
 ### SignUp endpoint
 - Request:
-  ```cmd
+  ```
   curl --location 'http://localhost:8000/auth/signup' \
   --header 'Content-Type: application/json' \
   --data-raw '{
@@ -64,7 +64,7 @@ cd jwtgo
   ```
   
 - Response:
-  ```json
+  ```
   HTTP/1.1 200 OK
   Content-Type: application/json
   ```
@@ -76,7 +76,7 @@ cd jwtgo
 
 ### SignIn endpoint
 - Request:
-  ```cmd
+  ```
   curl --location 'http://localhost:8000/auth/signin' \
   --header 'Content-Type: application/json' \
   --data-raw '{
@@ -86,7 +86,7 @@ cd jwtgo
   ```
 
 - Response:
-  ```json
+  ```
   HTTP/1.1 200 OK
   Content-Type: application/json
   Set-Cookie: access_token=access_token; Path=/; HttpOnly; SameSite=Strict
@@ -100,14 +100,14 @@ cd jwtgo
 
 ### Refresh endpoint
 - Request:
-  ```cmd
+  ```
   curl --location 'http://localhost:8000/auth/refresh' \
   --header 'Content-Type: application/json' \
   -b 'access_token=access_token; refresh_token=refresh_token'
   ```
 
 - Response:
-  ```json
+  ```
   HTTP/1.1 200 OK
   Content-Type: application/json
   Set-Cookie: access_token=access_token; Path=/; HttpOnly; SameSite=Strict
