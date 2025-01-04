@@ -53,7 +53,7 @@ cd jwtgo
 ## Complete project folder structure
 ```
 ├─── cmd
-│   └───app
+│   └─── app
 │       └─── main.go
 ├─── configs
 │   ├─── config.yaml
@@ -88,7 +88,7 @@ cd jwtgo
 │   │   │   ├─── auth.go
 │   │   │   ├─── jwt.go
 │   │   │   └─── server.go
-│   │   ├───interface
+│   │   ├─── interface
 │   │   │   ├─── repository
 │   │   │   │   └─── user.go
 │   │   │   └─── service
