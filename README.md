@@ -127,8 +127,7 @@ cd jwtgo
 │   └─── app
 │       └─── main.go
 ├─── configs
-│   ├─── config.yaml
-│   └─── config.yaml.sample
+│   └─── .env
 ├─── internal
 │   ├─── app
 │   │   ├─── main.go
