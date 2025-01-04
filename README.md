@@ -50,6 +50,75 @@ cd jwtgo
 ### Run with Docker
 - Coming soon.
 
+
+## Examples of API requests and responses
+### SignUp endpoint
+- Request:
+  ```cmd
+  curl --location 'http://localhost:8000/auth/signup' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+    "email": "test@gmail.com",
+    "password": "securepassword"
+  }'
+  ```
+  
+- Response:
+  ```json
+  HTTP/1.1 200 OK
+  Content-Type: application/json
+  ```
+  ```json
+  {
+    "message": "User successfully registered"
+  }
+  ```
+
+### SignIn endpoint
+- Request:
+  ```cmd
+  curl --location 'http://localhost:8000/auth/signin' \
+  --header 'Content-Type: application/json' \
+  --data-raw '{
+    "email": "test@gmail.com",
+    "password": "securepassword"
+  }'
+  ```
+
+- Response:
+  ```json
+  HTTP/1.1 200 OK
+  Content-Type: application/json
+  Set-Cookie: access_token=access_token; Path=/; HttpOnly; SameSite=Strict
+  Set-Cookie: refresh_token=refresh_token; Path=/; HttpOnly; SameSite=Strict
+  ```
+  ```json
+  {
+    "message": "Logged in successfully"
+  }
+  ```
+
+### Refresh endpoint
+- Request:
+  ```cmd
+  curl --location 'http://localhost:8000/auth/refresh' \
+  --header 'Content-Type: application/json' \
+  -b 'access_token=access_token; refresh_token=refresh_token'
+  ```
+
+- Response:
+  ```json
+  HTTP/1.1 200 OK
+  Content-Type: application/json
+  Set-Cookie: access_token=access_token; Path=/; HttpOnly; SameSite=Strict
+  Set-Cookie: refresh_token=refresh_token; Path=/; HttpOnly; SameSite=Strict
+  ```
+  ```json
+  {
+    "message": "Tokens updated successfully"
+  }
+  ```
+
 ## Complete project folder structure
 ```
 ├─── cmd
