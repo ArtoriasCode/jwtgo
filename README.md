@@ -94,7 +94,7 @@ cd jwtgo
   ```
   ```json
   {
-    "message": "Logged in successfully"
+    "message": "User successfully logged in"
   }
   ```
 
@@ -115,7 +115,7 @@ cd jwtgo
   ```
   ```json
   {
-    "message": "Tokens updated successfully"
+    "message": "Tokens successfully updated"
   }
   ```
 

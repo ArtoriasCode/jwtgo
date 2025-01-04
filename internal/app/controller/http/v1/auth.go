@@ -94,7 +94,7 @@ func (ac *AuthController) SignIn() gin.HandlerFunc {
 			{Name: "refresh_token", Value: userTokensDTO.RefreshToken, Duration: 7 * 24 * time.Hour},
 		})
 
-		c.JSON(http.StatusOK, gin.H{"message": "Logged in successfully"})
+		c.JSON(http.StatusOK, gin.H{"message": "User successfully logged in"})
 	}
 }
 
@@ -132,6 +132,6 @@ func (ac *AuthController) Refresh() gin.HandlerFunc {
 			{Name: "refresh_token", Value: userTokensDTO.RefreshToken, Duration: 7 * 24 * time.Hour},
 		})
 
-		c.JSON(http.StatusOK, gin.H{"message": "Tokens updated successfully"})
+		c.JSON(http.StatusOK, gin.H{"message": "Tokens successfully updated"})
 	}
 }
