@@ -49,3 +49,66 @@ cd jwtgo
 
 ### Run with Docker
 - Coming soon.
+
+## Complete project folder structure
+```
+├─── cmd
+│   └───app
+│       └─── main.go
+├─── configs
+│   ├─── config.yaml
+│   └─── config.yaml.sample
+├─── internal
+│   ├─── app
+│   │   ├─── main.go
+│   │   ├─── adapter
+│   │   │   └─── mongodb
+│   │   │       ├─── entity
+│   │   │       │   └─── user.go
+│   │   │       ├─── mapper
+│   │   │       │   └─── user.go
+│   │   │       └─── repository
+│   │   │           └─── user.go
+│   │   ├─── config
+│   │   │   └─── config.go
+│   │   ├─── controller
+│   │   │   └─── http
+│   │   │       ├─── dto
+│   │   │       │   └─── user.go
+│   │   │       ├─── mapper
+│   │   │       │   └─── user.go
+│   │   │       ├─── middleware
+│   │   │       │   ├─── security.go
+│   │   │       │   └─── validation.go
+│   │   │       └─── v1
+│   │   │           └─── auth.go
+│   │   ├─── entity
+│   │   │   └─── user.go
+│   │   ├─── error
+│   │   │   ├─── auth.go
+│   │   │   ├─── jwt.go
+│   │   │   └─── server.go
+│   │   ├───interface
+│   │   │   ├─── repository
+│   │   │   │   └─── user.go
+│   │   │   └─── service
+│   │   │       ├─── auth.go
+│   │   │       ├─── jwt.go
+│   │   │       └─── password.go
+│   │   ├─── schema
+│   │   │   └─── jwt.go
+│   │   └─── service
+│   │       ├─── auth.go
+│   │       ├─── jwt.go
+│   │       └─── password.go
+│   └─── pkg
+│       └─── request
+│           ├─── response.go
+│           └─── schema
+│               └─── response.go
+└─── pkg
+    ├─── client
+    │   └─── mongodb.go
+    └─── logging
+        └─── logger.go
+```
