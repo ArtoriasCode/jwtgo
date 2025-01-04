@@ -25,3 +25,27 @@ The architecture of a web application consists of 3 main layers:
 
 ## Request Flow with JWT Authentication Middleware
 ![Image](https://raw.githubusercontent.com/Astagnar/jwtgo/refs/heads/main/assets/with-jwt.png)
+
+## How to run the project?
+First, download it and navigate to the root directory:
+```bash
+# Move to your workspace
+cd your-workspace
+
+# Clone the project into your workspace
+git clone https://github.com/Astagnar/jwtgo.git
+
+# Move to the project root directory
+cd jwtgo
+```
+
+### Run without Docker
+- Navigate to the `configs` folder and create a `config.yaml` file, similar to `config.yaml.sample`, in this directory.
+- Install the `go` if it is not installed on your computer.
+- Install the `MongoDB` if it is not installed on your computer.
+- Fill in the `config.yaml` file with your data.
+- Run `go run cmd/app/main.go`.
+- Access API using http://127.0.0.1:8000.
+
+### Run with Docker
+- Coming soon.
