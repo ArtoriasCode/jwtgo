@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -56,7 +57,16 @@ func (app *Application) InitializeRouter() {
 
 func (app *Application) InitializeClients() {
 	app.Validator = validator.New()
-	app.MongoClient = client.NewMongodbClient(app.Config.MongoDB.Url, app.Logger).Connect()
+
+	databaseUrl := fmt.Sprintf(
+		"%s://%s:%s@%s:%d/",
+		app.Config.MongoDB.Uri,
+		app.Config.MongoDB.User,
+		app.Config.MongoDB.Password,
+		app.Config.MongoDB.Host,
+		app.Config.MongoDB.Port,
+	)
+	app.MongoClient = client.NewMongodbClient(databaseUrl, app.Logger).Connect()
 }
 
 func (app *Application) InitializeServices() {
