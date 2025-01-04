@@ -41,7 +41,7 @@ cd jwtgo
 ```
 
 ### Run without Docker
-- Navigate to the `configs` folder and create a `.env` file, similar to `.env.sample`, in this directory.
+- Create a `.env` file, similar to `.env.sample`.
 - Install the `go` if it is not installed on your computer.
 - Install the `MongoDB` if it is not installed on your computer.
 - Fill in the `.env` file with your data.
@@ -50,8 +50,11 @@ cd jwtgo
 - Access API using http://127.0.0.1:8000.
 
 ### Run with Docker
-- Coming soon.
-
+- Create a `.env` file, similar to `.env.sample`.
+- Install the `Docker` if it is not installed on your computer.
+- Fill in the `.env` file with your data.
+- Run `docker-compose up -d`.
+- Access API using http://127.0.0.1:8000.
 
 ## Examples of API requests and responses
 ### SignUp endpoint
@@ -123,11 +126,12 @@ cd jwtgo
 
 ## Complete project folder structure
 ```
+├─── .env
+├─── Dockerfile
+├─── docker-compose.yaml
 ├─── cmd
 │   └─── app
 │       └─── main.go
-├─── configs
-│   └─── .env
 ├─── internal
 │   ├─── app
 │   │   ├─── main.go

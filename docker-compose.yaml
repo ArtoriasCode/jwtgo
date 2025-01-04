@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: jwtgo
+    container_name: jwtgo
+    restart: unless-stopped
+    env_file: ".env"
+    ports:
+      - "$APP_PORT:$APP_PORT"
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    restart: unless-stopped
+    env_file: ".env"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=$MONGODB_USER
+      - MONGO_INITDB_ROOT_PASSWORD=$MONGODB_PASSWORD
+    ports:
+      - "$MONGODB_PORT:$MONGODB_PORT"
+    volumes:
+      - dbdata:/data/db
+
+volumes:
+  dbdata:
