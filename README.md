@@ -127,11 +127,14 @@ cd jwtgo
 ## Complete project folder structure
 ```
 ├─── .env
-├─── Dockerfile
-├─── docker-compose.yaml
+├─── build
+│   └─── package
+│       └─── Dockerfile
 ├─── cmd
 │   └─── app
 │       └─── main.go
+├─── deployments
+│   └─── docker-compose.yaml
 ├─── internal
 │   ├─── app
 │   │   ├─── main.go
