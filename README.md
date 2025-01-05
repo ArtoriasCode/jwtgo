@@ -60,7 +60,7 @@ cd jwtgo
 ### SignUp endpoint
 - Request:
   ```
-  curl --location 'http://localhost:8000/auth/signup' \
+  curl --location 'http://localhost:8001/auth/signup' \
   --header 'Content-Type: application/json' \
   --data-raw '{
     "email": "test@gmail.com",
@@ -82,7 +82,7 @@ cd jwtgo
 ### SignIn endpoint
 - Request:
   ```
-  curl --location 'http://localhost:8000/auth/signin' \
+  curl --location 'http://localhost:8001/auth/signin' \
   --header 'Content-Type: application/json' \
   --data-raw '{
     "email": "test@gmail.com",
@@ -106,7 +106,7 @@ cd jwtgo
 ### Refresh endpoint
 - Request:
   ```
-  curl --location 'http://localhost:8000/auth/refresh' \
+  curl --location 'http://localhost:8001/auth/refresh' \
   --header 'Content-Type: application/json' \
   -b 'access_token=access_token; refresh_token=refresh_token'
   ```
