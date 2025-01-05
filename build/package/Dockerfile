@@ -2,7 +2,9 @@ FROM golang:1.23.4-alpine
 
 RUN mkdir /jwtgo
 
-ADD . /jwtgo
+RUN pwd
+
+ADD ../../ /jwtgo
 
 WORKDIR /jwtgo
 

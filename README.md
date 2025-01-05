@@ -53,7 +53,7 @@ cd jwtgo
 - Create a `.env` file, similar to `.env.sample`.
 - Install the `Docker` if it is not installed on your computer.
 - Fill in the `.env` file with your data.
-- Run `docker-compose up -d`.
+- Run `docker-compose -f deployments/docker-compose.yaml --env-file=".env" up -d`.
 - Access API using http://127.0.0.1:8001.
 
 ## Examples of API requests and responses
