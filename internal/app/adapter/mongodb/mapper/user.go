@@ -56,21 +56,11 @@ func MapMongoUsersToDomainUsers(mongoUsers []*mongoEntity.User) []*domainEntity.
 func MapDomainUserToBsonUser(domainUser *domainEntity.User) bson.M {
 	updateFields := bson.M{}
 
-	if domainUser.Email != "" {
-		updateFields["email"] = domainUser.Email
-	}
-	if domainUser.Password != "" {
-		updateFields["password"] = domainUser.Password
-	}
-	if domainUser.Salt != "" {
-		updateFields["salt"] = domainUser.Salt
-	}
-	if domainUser.RefreshToken != "" {
-		updateFields["refresh_token"] = domainUser.RefreshToken
-	}
-	if !domainUser.UpdatedAt.IsZero() {
-		updateFields["updated_at"] = domainUser.UpdatedAt
-	}
+	updateFields["email"] = domainUser.Email
+	updateFields["password"] = domainUser.Password
+	updateFields["salt"] = domainUser.Salt
+	updateFields["refresh_token"] = domainUser.RefreshToken
+	updateFields["updated_at"] = domainUser.UpdatedAt
 
 	return updateFields
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -101,6 +102,7 @@ func (ur *UserRepository) Update(ctx context.Context, id string, domainUser *dom
 		return false, customErr.NewInternalServerError("Invalid user ID format")
 	}
 
+	domainUser.UpdatedAt = time.Now().UTC()
 	bsonUser := mapper.MapDomainUserToBsonUser(domainUser)
 
 	_, err = ur.collection.UpdateOne(ctx, bson.M{"_id": objID}, bson.M{"$set": bsonUser})

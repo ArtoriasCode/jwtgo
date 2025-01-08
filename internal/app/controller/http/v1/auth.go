@@ -40,8 +40,26 @@ func NewAuthController(
 func (ac *AuthController) Register(router *gin.Engine) {
 	router.POST("/auth/signup", middleware.Validator[dto.UserCredentialsDTO](ac.requestValidator), ac.SignUp())
 	router.POST("/auth/signin", middleware.Validator[dto.UserCredentialsDTO](ac.requestValidator), ac.SignIn())
-	router.POST("/auth/refresh", ac.Refresh())
 	router.POST("/auth/signout", ac.SignOut())
+	router.POST("/auth/refresh", ac.Refresh())
+}
+
+func (ac *AuthController) handleError(c *gin.Context, err error, defaultMsg string) {
+	var alreadyExistsErr *customErr.AlreadyExistsError
+	var invalidCredentialsErr *customErr.InvalidCredentialsError
+	var invalidTokenError *customErr.InvalidTokenError
+	var expiredTokenError *customErr.ExpiredTokenError
+	var userNotFoundError *customErr.UserNotFoundError
+
+	switch {
+	case errors.As(err, &alreadyExistsErr):
+		c.JSON(http.StatusConflict, gin.H{"message": err.Error()})
+	case errors.As(err, &invalidCredentialsErr), errors.As(err, &invalidTokenError), errors.As(err, &expiredTokenError), errors.As(err, &userNotFoundError):
+		c.JSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
+	default:
+		ac.logger.Error(defaultMsg+": ", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+	}
 }
 
 func (ac *AuthController) SignUp() gin.HandlerFunc {
@@ -53,15 +71,7 @@ func (ac *AuthController) SignUp() gin.HandlerFunc {
 
 		_, err := ac.authService.SignUp(ctx, &userCredentialsDTO)
 		if err != nil {
-			var alreadyExistsErr *customErr.AlreadyExistsError
-
-			if errors.As(err, &alreadyExistsErr) {
-				c.JSON(http.StatusConflict, gin.H{"message": err.Error()})
-			} else {
-				ac.logger.Error("Error while authorizing: ", err)
-				c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-			}
-
+			ac.handleError(c, err, "Error while sign up")
 			return
 		}
 
@@ -78,15 +88,7 @@ func (ac *AuthController) SignIn() gin.HandlerFunc {
 
 		userTokensDTO, err := ac.authService.SignIn(ctx, &userCredentialsDTO)
 		if err != nil {
-			var invalidCredentialsErr *customErr.InvalidCredentialsError
-
-			if errors.As(err, &invalidCredentialsErr) {
-				c.JSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
-			} else {
-				ac.logger.Error("Error while registering: ", err)
-				c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-			}
-
+			ac.handleError(c, err, "Error while sign in")
 			return
 		}
 
@@ -96,44 +98,6 @@ func (ac *AuthController) SignIn() gin.HandlerFunc {
 		})
 
 		c.JSON(http.StatusOK, gin.H{"message": "User successfully logged in"})
-	}
-}
-
-func (ac *AuthController) Refresh() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
-		defer cancel()
-
-		refreshToken, err := c.Cookie("refresh_token")
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid refresh token"})
-			return
-		}
-
-		refreshTokenDTO := mapper.MapToUserTokenDTO(refreshToken)
-
-		userTokensDTO, err := ac.authService.Refresh(ctx, refreshTokenDTO)
-		if err != nil {
-			var invalidTokenError *customErr.InvalidTokenError
-			var expiredTokenError *customErr.ExpiredTokenError
-			var userNotFoundError *customErr.UserNotFoundError
-
-			if errors.As(err, &invalidTokenError) || errors.As(err, &expiredTokenError) || errors.As(err, &userNotFoundError) {
-				c.JSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
-			} else {
-				ac.logger.Error("Error while refreshing: ", err)
-				c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-			}
-
-			return
-		}
-
-		request.SetCookies(c, []schema.Cookie{
-			{Name: "access_token", Value: userTokensDTO.AccessToken, Duration: 7 * 24 * time.Hour},
-			{Name: "refresh_token", Value: userTokensDTO.RefreshToken, Duration: 7 * 24 * time.Hour},
-		})
-
-		c.JSON(http.StatusOK, gin.H{"message": "Tokens successfully updated"})
 	}
 }
 
@@ -152,17 +116,7 @@ func (ac *AuthController) SignOut() gin.HandlerFunc {
 
 		err = ac.authService.SignOut(ctx, accessTokenDTO)
 		if err != nil {
-			var invalidTokenError *customErr.InvalidTokenError
-			var expiredTokenError *customErr.ExpiredTokenError
-			var userNotFoundError *customErr.UserNotFoundError
-
-			if errors.As(err, &invalidTokenError) || errors.As(err, &expiredTokenError) || errors.As(err, &userNotFoundError) {
-				c.JSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
-			} else {
-				ac.logger.Error("Error while refreshing: ", err)
-				c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-			}
-
+			ac.handleError(c, err, "Error while sign out")
 			return
 		}
 
@@ -172,5 +126,33 @@ func (ac *AuthController) SignOut() gin.HandlerFunc {
 		})
 
 		c.JSON(http.StatusOK, gin.H{"message": "User successfully logged out"})
+	}
+}
+
+func (ac *AuthController) Refresh() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+
+		refreshToken, err := c.Cookie("refresh_token")
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid refresh token"})
+			return
+		}
+
+		refreshTokenDTO := mapper.MapToUserTokenDTO(refreshToken)
+
+		userTokensDTO, err := ac.authService.Refresh(ctx, refreshTokenDTO)
+		if err != nil {
+			ac.handleError(c, err, "Error while refresh")
+			return
+		}
+
+		request.SetCookies(c, []schema.Cookie{
+			{Name: "access_token", Value: userTokensDTO.AccessToken, Duration: 7 * 24 * time.Hour},
+			{Name: "refresh_token", Value: userTokensDTO.RefreshToken, Duration: 7 * 24 * time.Hour},
+		})
+
+		c.JSON(http.StatusOK, gin.H{"message": "Tokens successfully updated"})
 	}
 }

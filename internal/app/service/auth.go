@@ -2,8 +2,6 @@ package service
 
 import (
 	"context"
-	"time"
-
 	"jwtgo/internal/app/controller/http/dto"
 	"jwtgo/internal/app/controller/http/mapper"
 	customErr "jwtgo/internal/app/error"
@@ -93,7 +91,6 @@ func (s *AuthService) SignIn(ctx context.Context, userCredentialsDTO *dto.UserCr
 	}
 
 	existingUserEntity.RefreshToken = refreshToken
-	existingUserEntity.UpdatedAt = time.Now().UTC()
 
 	_, err = s.userRepository.Update(ctx, existingUserEntity.Id, existingUserEntity)
 	if err != nil {
@@ -102,6 +99,33 @@ func (s *AuthService) SignIn(ctx context.Context, userCredentialsDTO *dto.UserCr
 	}
 
 	return mapper.MapToUserTokensDTO(accessToken, refreshToken), nil
+}
+
+func (s *AuthService) SignOut(ctx context.Context, refreshTokenDTO *dto.UserTokenDTO) error {
+	claims, err := s.jwtService.ValidateToken(refreshTokenDTO.RefreshToken)
+	if err != nil {
+		return err
+	}
+
+	existingUserEntity, err := s.userRepository.GetById(ctx, claims.Id)
+	if err != nil {
+		s.logger.Error("Error while getting user: ", err)
+		return customErr.NewInternalServerError("Failed to check user id")
+	}
+
+	if existingUserEntity == nil {
+		return customErr.NewUserNotFoundError("User not found")
+	}
+
+	existingUserEntity.RefreshToken = ""
+
+	_, err = s.userRepository.Update(ctx, claims.Id, existingUserEntity)
+	if err != nil {
+		s.logger.Error("Error while updating user: ", err)
+		return customErr.NewInternalServerError("User updating error")
+	}
+
+	return nil
 }
 
 func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserTokenDTO) (*dto.UserTokensDTO, error) {
@@ -131,7 +155,6 @@ func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserToke
 	}
 
 	existingUserEntity.RefreshToken = refreshToken
-	existingUserEntity.UpdatedAt = time.Now().UTC()
 
 	_, err = s.userRepository.Update(ctx, claims.Id, existingUserEntity)
 	if err != nil {
@@ -140,32 +163,4 @@ func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserToke
 	}
 
 	return mapper.MapToUserTokensDTO(accessToken, refreshToken), nil
-}
-
-func (s *AuthService) SignOut(ctx context.Context, refreshTokenDTO *dto.UserTokenDTO) error {
-	claims, err := s.jwtService.ValidateToken(refreshTokenDTO.RefreshToken)
-	if err != nil {
-		return err
-	}
-
-	existingUserEntity, err := s.userRepository.GetById(ctx, claims.Id)
-	if err != nil {
-		s.logger.Error("Error while getting user: ", err)
-		return customErr.NewInternalServerError("Failed to check user id")
-	}
-
-	if existingUserEntity == nil {
-		return customErr.NewUserNotFoundError("User not found")
-	}
-
-	existingUserEntity.RefreshToken = ""
-	existingUserEntity.UpdatedAt = time.Now().UTC()
-
-	_, err = s.userRepository.Update(ctx, claims.Id, existingUserEntity)
-	if err != nil {
-		s.logger.Error("Error while updating user: ", err)
-		return customErr.NewInternalServerError("User updating error")
-	}
-
-	return nil
 }
