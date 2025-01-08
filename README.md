@@ -45,15 +45,24 @@ cd jwtgo
 - Install the `go` if it is not installed on your computer.
 - Install the `MongoDB` if it is not installed on your computer.
 - Fill in the `.env` file with your data.
-- Run `go mod download`.
-- Run `go run cmd/app/main.go`.
+- Download the dependencies with the following command:
+  ```bash
+  go mod download
+  ```
+- Run the application with the following command:
+  ```bash
+  go run cmd/app/main.go
+  ```
 - Access API using http://127.0.0.1:8001.
 
 ### Run with Docker
 - Create a `.env` file, similar to `.env.sample`.
 - Install the `Docker` if it is not installed on your computer.
 - Fill in the `.env` file with your data.
-- Run `docker-compose -f deployments/docker-compose.yaml --env-file=".env" up -d`.
+- Run the application build with the following command:
+  ```bash
+  docker-compose -f deployments/docker-compose.yaml --env-file=".env" up -d
+  ```
 - Access API using http://127.0.0.1:8001.
 
 ## Examples of API requests and responses
