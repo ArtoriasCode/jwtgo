@@ -7,8 +7,8 @@ import (
 	"jwtgo/internal/app/entity"
 )
 
-func MapToUserRefreshTokenDTO(refreshToken string) *dto.UserRefreshTokenDTO {
-	return &dto.UserRefreshTokenDTO{
+func MapToUserTokenDTO(refreshToken string) *dto.UserTokenDTO {
+	return &dto.UserTokenDTO{
 		RefreshToken: refreshToken,
 	}
 }

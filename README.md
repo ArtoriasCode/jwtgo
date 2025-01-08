@@ -136,6 +136,27 @@ cd jwtgo
   }
   ```
 
+### SignOut endpoint
+- Request:
+  ```
+  curl --location 'http://localhost:8001/auth/signout' \
+  --header 'Content-Type: application/json' \
+  -b 'access_token=access_token; refresh_token=refresh_token'
+  ```
+
+- Response:
+  ```
+  HTTP/1.1 200 OK
+  Content-Type: application/json
+  Set-Cookie: access_token=access_token; Path=/; HttpOnly; SameSite=Strict
+  Set-Cookie: refresh_token=refresh_token; Path=/; HttpOnly; SameSite=Strict
+  ```
+  ```json
+  {
+    "message": "User successfully logged out"
+  }
+  ```
+
 ## Complete project folder structure
 ```
 ├─── .env

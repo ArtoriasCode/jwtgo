@@ -1,7 +1,7 @@
 package dto
 
-type UserRefreshTokenDTO struct {
-	RefreshToken string `json:"refresh_token"`
+type UserTokenDTO struct {
+	RefreshToken string `json:"token"`
 }
 
 type UserTokensDTO struct {

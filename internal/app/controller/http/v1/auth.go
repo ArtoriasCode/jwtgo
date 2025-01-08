@@ -41,6 +41,7 @@ func (ac *AuthController) Register(router *gin.Engine) {
 	router.POST("/auth/signup", middleware.Validator[dto.UserCredentialsDTO](ac.requestValidator), ac.SignUp())
 	router.POST("/auth/signin", middleware.Validator[dto.UserCredentialsDTO](ac.requestValidator), ac.SignIn())
 	router.POST("/auth/refresh", ac.Refresh())
+	router.POST("/auth/signout", ac.SignOut())
 }
 
 func (ac *AuthController) SignUp() gin.HandlerFunc {
@@ -109,7 +110,7 @@ func (ac *AuthController) Refresh() gin.HandlerFunc {
 			return
 		}
 
-		refreshTokenDTO := mapper.MapToUserRefreshTokenDTO(refreshToken)
+		refreshTokenDTO := mapper.MapToUserTokenDTO(refreshToken)
 
 		userTokensDTO, err := ac.authService.Refresh(ctx, refreshTokenDTO)
 		if err != nil {
@@ -133,5 +134,43 @@ func (ac *AuthController) Refresh() gin.HandlerFunc {
 		})
 
 		c.JSON(http.StatusOK, gin.H{"message": "Tokens successfully updated"})
+	}
+}
+
+func (ac *AuthController) SignOut() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		defer cancel()
+
+		accessToken, err := c.Cookie("access_token")
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid access token"})
+			return
+		}
+
+		accessTokenDTO := mapper.MapToUserTokenDTO(accessToken)
+
+		err = ac.authService.SignOut(ctx, accessTokenDTO)
+		if err != nil {
+			var invalidTokenError *customErr.InvalidTokenError
+			var expiredTokenError *customErr.ExpiredTokenError
+			var userNotFoundError *customErr.UserNotFoundError
+
+			if errors.As(err, &invalidTokenError) || errors.As(err, &expiredTokenError) || errors.As(err, &userNotFoundError) {
+				c.JSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
+			} else {
+				ac.logger.Error("Error while refreshing: ", err)
+				c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			}
+
+			return
+		}
+
+		request.SetCookies(c, []schema.Cookie{
+			{Name: "access_token", Value: "", Duration: 7 * 24 * time.Hour},
+			{Name: "refresh_token", Value: "", Duration: 7 * 24 * time.Hour},
+		})
+
+		c.JSON(http.StatusOK, gin.H{"message": "User successfully logged out"})
 	}
 }
