@@ -46,10 +46,12 @@ cd jwtgo
 - Install the `MongoDB` if it is not installed on your computer.
 - Fill in the `.env` file with your data.
 - Download the dependencies with the following command:
+
   ```bash
   go mod download
   ```
 - Run the application with the following command:
+
   ```bash
   go run cmd/app/main.go
   ```
@@ -60,6 +62,7 @@ cd jwtgo
 - Install the `Docker` if it is not installed on your computer.
 - Fill in the `.env` file with your data.
 - Run the application build with the following command:
+
   ```bash
   docker-compose -f deployments/docker-compose.yaml --env-file=".env" up -d
   ```
