@@ -14,6 +14,8 @@ The architecture of a web application consists of 5 main layers:
 
 ![Image](https://raw.githubusercontent.com/Astagnar/jwtgo/refs/heads/main/assets/architecture.png)
 
+The API is accessed via Reverse Proxy, in our case it is Nginx. It handles all incoming requests and prevents access to microservices and API gateway directly.
+
 ## Major packages used in project
 - **[Gin](https://pkg.go.dev/github.com/gin-gonic/gin)**: Gin is a HTTP web framework written in Go (Golang). It features a Martini-like API with much better performance -- up to 40 times faster. If you need smashing performance, get yourself some Gin. 
 - **[gRPC](https://pkg.go.dev/google.golang.org/grpc)**: The Go implementation of gRPC: A high performance, open source, general RPC framework that puts mobile and HTTP/2 first. For more information see the Go gRPC docs, or jump directly into the quick start. 
