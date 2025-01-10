@@ -45,21 +45,20 @@ cd jwtgo
 
 ### Run with Docker
 - Create a `.env` file, similar to `.env.sample`.
-- Install the `Docker` if it is not installed on your computer.
-- Install the `Protoc` if it is not installed on your computer.
+- Install the [Docker](https://www.docker.com/get-started/), [Protoc](https://grpc.io/docs/protoc-installation/), [Taskfile](https://taskfile.dev/installation/) if it is not installed on your computer.
 - Fill in the `.env` file with your data.
 - Run the application build with the following command:
 
   ```bash
-  docker-compose -f deployments/docker-compose.yaml --env-file=".env" up -d
+  task build
   ```
-- Access API using http://127.0.0.1:8001.
+- Access API using http://localhost.
 
 ## Examples of API requests and responses
 ### SignUp endpoint
 - Request:
   ```
-  curl --location 'http://127.0.0.1:8001/auth/signup' \
+  curl --location 'http://localhost/auth/signup' \
   --header 'Content-Type: application/json' \
   --data-raw '{
     "email": "test@gmail.com",
@@ -81,7 +80,7 @@ cd jwtgo
 ### SignIn endpoint
 - Request:
   ```
-  curl --location 'http://127.0.0.1:8001/auth/signin' \
+  curl --location 'http://localhost/auth/signin' \
   --header 'Content-Type: application/json' \
   --data-raw '{
     "email": "test@gmail.com",
@@ -105,7 +104,7 @@ cd jwtgo
 ### SignOut endpoint
 - Request:
   ```
-  curl --location 'http://127.0.0.1:8001/auth/signout' \
+  curl --location 'http://localhost/auth/signout' \
   --header 'Content-Type: application/json' \
   -b 'access_token=access_token; refresh_token=refresh_token'
   ```
@@ -126,7 +125,7 @@ cd jwtgo
 ### Refresh endpoint
 - Request:
   ```
-  curl --location 'http://127.0.0.1:8001/auth/refresh' \
+  curl --location 'http://localhost/auth/refresh' \
   --header 'Content-Type: application/json' \
   -b 'access_token=access_token; refresh_token=refresh_token'
   ```
@@ -162,6 +161,8 @@ cd jwtgo
 │   │   └───main.go
 │   └───auth
 │       └───main.go
+├───configs
+│   └───nginx.conf
 ├───deployments
 │   └───docker-compose.yaml
 ├───internal

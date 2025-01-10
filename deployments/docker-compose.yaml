@@ -1,6 +1,28 @@
 version: "3.8"
 
 services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    restart: unless-stopped
+    environment:
+      - NGINX_PORT=$NGINX_PORT
+      - API_GATEWAY_CONTAINER=$API_GATEWAY_CONTAINER
+      - API_GATEWAY_PORT=$API_GATEWAY_PORT
+    ports:
+      - "$NGINX_PORT:$NGINX_PORT"
+    networks:
+      - jwtgo
+    volumes:
+      - ../configs/nginx.conf:/etc/nginx/nginx.conf.template:ro
+    command: >
+      /bin/bash -c "envsubst \"`for v in $$(compgen -v);do printf '$${%s} ' $$v;done`'\" 
+      < /etc/nginx/nginx.conf.template
+      > /etc/nginx/nginx.conf
+      && nginx -g 'daemon off;'"
+    depends_on:
+      - api
+
   api:
     build:
       context: ../
@@ -8,8 +30,6 @@ services:
     image: api
     container_name: $API_GATEWAY_CONTAINER
     restart: unless-stopped
-    ports:
-      - "$API_GATEWAY_PORT:$API_GATEWAY_PORT"
     networks:
       - jwtgo
     depends_on:
@@ -22,8 +42,6 @@ services:
     image: auth
     container_name: $AUTH_SERVICE_CONTAINER
     restart: unless-stopped
-    ports:
-      - "$AUTH_SERVICE_PORT:$AUTH_SERVICE_PORT"
     networks:
       - jwtgo
     depends_on:
