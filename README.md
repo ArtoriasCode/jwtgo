@@ -7,7 +7,7 @@ The project was created for educational purposes and can be used in your project
 ## Project architecture
 The architecture of a web application consists of 5 main layers:
 - Reverse Proxy
-- API gateway
+- API Gateway
 - Server
 - Service
 - Repository
