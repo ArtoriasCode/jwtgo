@@ -10,10 +10,12 @@ The architecture of a web application consists of 3 main layers:
 - Service
 - Repository
 
-![Image](https://raw.githubusercontent.com/Astagnar/jwtgo/refs/heads/main/assets/architecture.png)
+![Image](https://raw.githubusercontent.com/Astagnar/jwtgo/refs/heads/main/assets/architecture.svg)
 
 ## Major packages used in project
 - **[Gin](https://pkg.go.dev/github.com/gin-gonic/gin)**: Gin is a HTTP web framework written in Go (Golang). It features a Martini-like API with much better performance -- up to 40 times faster. If you need smashing performance, get yourself some Gin. 
+- **[gRPC](https://pkg.go.dev/google.golang.org/grpc)**: The Go implementation of gRPC: A high performance, open source, general RPC framework that puts mobile and HTTP/2 first. For more information see the Go gRPC docs, or jump directly into the quick start. 
+- **[protobuf](https://pkg.go.dev/google.golang.org/protobuf)**: Go support for Google's protocol buffers.
 - **[MongoDB](https://pkg.go.dev/go.mongodb.org/mongo-driver)**: The Official Golang driver for MongoDB.
 - **[JWT](https://pkg.go.dev/github.com/golang-jwt/jwt/v5)**: Go implementation of JSON Web Tokens (JWT).
 - **[Cleanenv](https://pkg.go.dev/github.com/ilyakaznacheev/cleanenv)**: Clean and minimalistic environment configuration reader for Golang.
@@ -40,26 +42,10 @@ git clone https://github.com/Astagnar/jwtgo.git
 cd jwtgo
 ```
 
-### Run without Docker
-- Create a `.env` file, similar to `.env.sample`.
-- Install the `go` if it is not installed on your computer.
-- Install the `MongoDB` if it is not installed on your computer.
-- Fill in the `.env` file with your data.
-- Download the dependencies with the following command:
-
-  ```bash
-  go mod download
-  ```
-- Run the application with the following command:
-
-  ```bash
-  go run cmd/app/main.go
-  ```
-- Access API using http://127.0.0.1:8001.
-
 ### Run with Docker
 - Create a `.env` file, similar to `.env.sample`.
 - Install the `Docker` if it is not installed on your computer.
+- Install the `Protoc` if it is not installed on your computer.
 - Fill in the `.env` file with your data.
 - Run the application build with the following command:
 
@@ -72,7 +58,7 @@ cd jwtgo
 ### SignUp endpoint
 - Request:
   ```
-  curl --location 'http://localhost:8001/auth/signup' \
+  curl --location 'http://127.0.0.1:8001/auth/signup' \
   --header 'Content-Type: application/json' \
   --data-raw '{
     "email": "test@gmail.com",
@@ -94,7 +80,7 @@ cd jwtgo
 ### SignIn endpoint
 - Request:
   ```
-  curl --location 'http://localhost:8001/auth/signin' \
+  curl --location 'http://127.0.0.1:8001/auth/signin' \
   --header 'Content-Type: application/json' \
   --data-raw '{
     "email": "test@gmail.com",
@@ -118,7 +104,7 @@ cd jwtgo
 ### SignOut endpoint
 - Request:
   ```
-  curl --location 'http://localhost:8001/auth/signout' \
+  curl --location 'http://127.0.0.1:8001/auth/signout' \
   --header 'Content-Type: application/json' \
   -b 'access_token=access_token; refresh_token=refresh_token'
   ```
@@ -139,7 +125,7 @@ cd jwtgo
 ### Refresh endpoint
 - Request:
   ```
-  curl --location 'http://localhost:8001/auth/refresh' \
+  curl --location 'http://127.0.0.1:8001/auth/refresh' \
   --header 'Content-Type: application/json' \
   -b 'access_token=access_token; refresh_token=refresh_token'
   ```
@@ -159,66 +145,97 @@ cd jwtgo
 
 ## Complete project folder structure
 ```
-├─── .env
-├─── build
-│   └─── package
-│       └─── Dockerfile
-├─── cmd
-│   └─── app
-│       └─── main.go
-├─── deployments
-│   └─── docker-compose.yaml
-├─── internal
-│   ├─── app
-│   │   ├─── main.go
-│   │   ├─── adapter
-│   │   │   └─── mongodb
-│   │   │       ├─── entity
-│   │   │       │   └─── user.go
-│   │   │       ├─── mapper
-│   │   │       │   └─── user.go
-│   │   │       └─── repository
-│   │   │           └─── user.go
-│   │   ├─── config
-│   │   │   └─── config.go
-│   │   ├─── controller
-│   │   │   └─── http
-│   │   │       ├─── dto
-│   │   │       │   └─── user.go
-│   │   │       ├─── mapper
-│   │   │       │   └─── user.go
-│   │   │       ├─── middleware
-│   │   │       │   ├─── security.go
-│   │   │       │   └─── validation.go
-│   │   │       └─── v1
-│   │   │           └─── auth.go
-│   │   ├─── entity
-│   │   │   └─── user.go
-│   │   ├─── error
-│   │   │   ├─── auth.go
-│   │   │   ├─── jwt.go
-│   │   │   └─── server.go
-│   │   ├─── interface
-│   │   │   ├─── repository
-│   │   │   │   └─── user.go
-│   │   │   └─── service
-│   │   │       ├─── auth.go
-│   │   │       ├─── jwt.go
-│   │   │       └─── password.go
-│   │   ├─── schema
-│   │   │   └─── jwt.go
-│   │   └─── service
-│   │       ├─── auth.go
-│   │       ├─── jwt.go
-│   │       └─── password.go
-│   └─── pkg
-│       └─── request
-│           ├─── response.go
-│           └─── schema
-│               └─── response.go
-└─── pkg
-    ├─── client
-    │   └─── mongodb.go
-    └─── logging
-        └─── logger.go
+├───.env
+├───.gitignore
+├───go.mod
+├───go.sum
+├───LICENSE
+├───README.md
+├───taskfile.yaml
+├───build
+│   └───package
+│       ├───api.Dockerfile
+│       └───auth.Dockerfile
+├───cmd
+│   ├───api
+│   │   └───main.go
+│   └───auth
+│       └───main.go
+├───deployments
+│   └───docker-compose.yaml
+├───internal
+│   ├───app
+│   │   ├───api
+│   │   │   ├───main.go
+│   │   │   ├───config
+│   │   │   │   └───config.go
+│   │   │   └───controller
+│   │   │       └───http
+│   │   │           ├───dto
+│   │   │           │   └───user.go
+│   │   │           ├───mapper
+│   │   │           │   └───user.go
+│   │   │           ├───middleware
+│   │   │           │   ├───security.go
+│   │   │           │   └───validation.go
+│   │   │           └───v1
+│   │   │               └───auth.go
+│   │   └───auth
+│   │       ├───main.go
+│   │       ├───adapter
+│   │       │   └───mongodb
+│   │       │       ├───entity
+│   │       │       │   └───user.go
+│   │       │       ├───mapper
+│   │       │       │   └───user.go
+│   │       │       └───repository
+│   │       │           └───user.go
+│   │       ├───config
+│   │       │   └───config.go
+│   │       ├───entity
+│   │       │   └───user.go
+│   │       ├───server
+│   │       │   └───grpc
+│   │       │       ├───dto
+│   │       │       │   └───user.go
+│   │       │       ├───mapper
+│   │       │       │   └───user.go
+│   │       │       └───v1
+│   │       │           └───auth.go
+│   │       └───service
+│   │           └───auth.go
+│   ├───pkg
+│   │   ├───error
+│   │   │   ├───auth.go
+│   │   │   ├───jwt.go
+│   │   │   ├───repository.go
+│   │   │   └───server.go
+│   │   ├───interface
+│   │   │   ├───repository
+│   │   │   │       user.go
+│   │   │   └───service
+│   │   │       ├───auth.go
+│   │   │       ├───jwt.go
+│   │   │       └───password.go
+│   │   ├───request
+│   │   │   │   response.go
+│   │   │   └───schema
+│   │   │       └───response.go
+│   │   └───service
+│   │       │   jwt.go
+│   │       │   password.go
+│   │       └───schema
+│   │           └───jwt.go
+│   └───proto
+│       └───auth
+│           ├───auth.pb.go
+│           └───auth_grpc.pb.go
+├───pkg
+│   ├───client
+│   │       mongodb.go
+│   └───logging
+│       └───logger.go
+└───proto
+    └───auth
+        └───auth.proto
 ```

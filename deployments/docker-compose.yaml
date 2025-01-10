@@ -1,29 +1,51 @@
 version: "3.8"
 
 services:
-  app:
+  api:
     build:
       context: ../
-      dockerfile: build/package/Dockerfile
-    image: app
-    container_name: app
+      dockerfile: build/package/api.Dockerfile
+    image: api
+    container_name: $API_GATEWAY_CONTAINER
     restart: unless-stopped
     ports:
-      - "$APP_PORT:$APP_PORT"
+      - "$API_GATEWAY_PORT:$API_GATEWAY_PORT"
+    networks:
+      - jwtgo
+    depends_on:
+      - auth
+
+  auth:
+    build:
+      context: ../
+      dockerfile: build/package/auth.Dockerfile
+    image: auth
+    container_name: $AUTH_SERVICE_CONTAINER
+    restart: unless-stopped
+    ports:
+      - "$AUTH_SERVICE_PORT:$AUTH_SERVICE_PORT"
+    networks:
+      - jwtgo
     depends_on:
       - mongodb
 
   mongodb:
     image: mongo:6.0
-    container_name: mongodb
+    container_name: $MONGODB_CONTAINER
     restart: unless-stopped
     environment:
       - MONGO_INITDB_ROOT_USERNAME=$MONGODB_USER
       - MONGO_INITDB_ROOT_PASSWORD=$MONGODB_PASSWORD
     ports:
       - "$MONGODB_PORT:$MONGODB_PORT"
+    networks:
+      - jwtgo
     volumes:
       - dbdata:/data/db
+
+networks:
+  jwtgo:
+    driver: bridge
 
 volumes:
   dbdata:
