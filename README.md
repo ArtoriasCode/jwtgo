@@ -5,7 +5,8 @@ A Go (Golang) Backend Clean Architecture project with Gin, MongoDB and JWT Authe
 The project was created for educational purposes and can be used in your projects as needed.
 
 ## Project architecture
-The architecture of a web application consists of 4 main layers:
+The architecture of a web application consists of 5 main layers:
+- Reverse Proxy
 - API gateway
 - Server
 - Service
