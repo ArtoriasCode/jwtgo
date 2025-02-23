@@ -1,6 +1,6 @@
 # jwtgo
 
-A Go (Golang) Backend Clean Architecture project with Gin, MongoDB and JWT Authentication Middleware.
+A Go (Golang) backend clean architecture project with Gin, MongoDB and JWT Authentication middleware.
 
 The project was created for educational purposes and is not ideal. It has its shortcomings, which are gradually being corrected.
 
