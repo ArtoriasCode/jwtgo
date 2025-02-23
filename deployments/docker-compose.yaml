@@ -2,23 +2,26 @@ version: "3.8"
 
 services:
   nginx:
-    image: nginx:latest
+    image: nginx:1.27.4-alpine-slim
     container_name: nginx
     restart: unless-stopped
     environment:
-      - NGINX_PORT=$NGINX_PORT
-      - API_GATEWAY_CONTAINER=$API_GATEWAY_CONTAINER
-      - API_GATEWAY_PORT=$API_GATEWAY_PORT
+      - NGINX_PORT=${NGINX_PORT}
+      - API_GATEWAY_CONTAINER=${API_GATEWAY_CONTAINER}
+      - API_GATEWAY_PORT=${API_GATEWAY_PORT}
     ports:
-      - "$NGINX_PORT:$NGINX_PORT"
+      - "${NGINX_PORT}:${NGINX_PORT}"
     networks:
       - jwtgo
     volumes:
       - ../configs/nginx.conf:/etc/nginx/nginx.conf.template:ro
     command: >
-      /bin/bash -c "envsubst \"`for v in $$(compgen -v);do printf '$${%s} ' $$v;done`'\" 
-      < /etc/nginx/nginx.conf.template
-      > /etc/nginx/nginx.conf
+      /bin/sh -c 
+      "envsubst '
+      $${NGINX_PORT} 
+      $${API_GATEWAY_CONTAINER} 
+      $${API_GATEWAY_PORT}
+      '< /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf 
       && nginx -g 'daemon off;'"
     depends_on:
       - api
@@ -27,20 +30,30 @@ services:
     build:
       context: ../
       dockerfile: build/package/api.Dockerfile
-    image: api
-    container_name: $API_GATEWAY_CONTAINER
+    container_name: ${API_GATEWAY_CONTAINER}
     restart: unless-stopped
     networks:
       - jwtgo
     depends_on:
       - auth
+      - user
 
   auth:
     build:
       context: ../
       dockerfile: build/package/auth.Dockerfile
-    image: auth
-    container_name: $AUTH_SERVICE_CONTAINER
+    container_name: ${AUTH_SERVICE_CONTAINER}
+    restart: unless-stopped
+    networks:
+      - jwtgo
+    depends_on:
+      - user
+
+  user:
+    build:
+      context: ../
+      dockerfile: build/package/user.Dockerfile
+    container_name: ${USER_SERVICE_CONTAINER}
     restart: unless-stopped
     networks:
       - jwtgo
@@ -48,14 +61,14 @@ services:
       - mongodb
 
   mongodb:
-    image: mongo:6.0
-    container_name: $MONGODB_CONTAINER
+    image: mongo:8.0
+    container_name: ${MONGODB_CONTAINER}
     restart: unless-stopped
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=$MONGODB_USER
-      - MONGO_INITDB_ROOT_PASSWORD=$MONGODB_PASSWORD
+      - MONGO_INITDB_ROOT_USERNAME=${MONGODB_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD}
     ports:
-      - "$MONGODB_PORT:$MONGODB_PORT"
+      - "${MONGODB_PORT}:${MONGODB_PORT}"
     networks:
       - jwtgo
     volumes:

@@ -14,14 +14,13 @@ type Config struct {
 		Port string `env:"AUTH_SERVICE_PORT,required"`
 	} `env-required:"true"`
 
-	MongoDB struct {
-		Uri      string `env:"MONGODB_URI,required"`
-		Host     string `env:"MONGODB_HOST,required"`
-		Port     int    `env:"MONGODB_PORT,required"`
-		User     string `env:"MONGODB_USER,required"`
-		Password string `env:"MONGODB_PASSWORD,required"`
-		Database string `env:"MONGODB_DATABASE,required"`
-	} `env-required:"true"`
+	Service struct {
+		User struct {
+			Host      string `env:"USER_SERVICE_HOST,required"`
+			Port      string `env:"USER_SERVICE_PORT,required"`
+			Container string `env:"USER_SERVICE_CONTAINER,required"`
+		}
+	}
 
 	Security struct {
 		Salt            string `env:"SECURITY_SALT,required"`

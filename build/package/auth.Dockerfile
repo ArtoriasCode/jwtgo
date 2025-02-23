@@ -1,13 +1,23 @@
-FROM golang:1.23.4-alpine
+FROM golang:1.23.4-alpine AS builder
 
-RUN mkdir /jwtgo
+WORKDIR /app
 
-RUN pwd
+COPY go.mod go.sum ./
+RUN go mod download
 
-ADD ../../ /jwtgo
+COPY cmd/auth/ ./cmd/auth/
+COPY internal/ ./internal/
+COPY pkg/ ./pkg/
 
-WORKDIR /jwtgo
+RUN go build -o /auth ./cmd/auth/main.go
 
-RUN go build -o main cmd/auth/main.go
+FROM alpine:latest
 
-CMD ["/jwtgo/main"]
+WORKDIR /root/
+
+COPY --from=builder /auth .
+COPY .env .env
+
+ENV $(cat .env | xargs)
+
+CMD ["/root/auth"]

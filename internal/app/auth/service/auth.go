@@ -2,30 +2,30 @@ package service
 
 import (
 	"context"
+	service2 "jwtgo/internal/pkg/interface/service"
 
 	"jwtgo/internal/app/auth/server/grpc/dto"
 	"jwtgo/internal/app/auth/server/grpc/mapper"
 	customErr "jwtgo/internal/pkg/error"
-	repositoryInterface "jwtgo/internal/pkg/interface/repository"
-	serviceInterface "jwtgo/internal/pkg/interface/service"
+	userPb "jwtgo/internal/pkg/proto/user"
 	"jwtgo/pkg/logging"
 )
 
 type AuthService struct {
-	userRepository  repositoryInterface.UserRepository
-	jwtService      serviceInterface.JWTService
-	passwordService serviceInterface.PasswordService
+	userService     userPb.UserServiceClient
+	jwtService      service2.JWTService
+	passwordService service2.PasswordService
 	logger          *logging.Logger
 }
 
 func NewAuthService(
-	userRepository repositoryInterface.UserRepository,
-	jwtService serviceInterface.JWTService,
-	passwordService serviceInterface.PasswordService,
+	userService userPb.UserServiceClient,
+	jwtService service2.JWTService,
+	passwordService service2.PasswordService,
 	logger *logging.Logger,
 ) *AuthService {
 	return &AuthService{
-		userRepository:  userRepository,
+		userService:     userService,
 		jwtService:      jwtService,
 		passwordService: passwordService,
 		logger:          logger,
@@ -33,13 +33,15 @@ func NewAuthService(
 }
 
 func (s *AuthService) SignUp(ctx context.Context, userCredentialsDTO *dto.UserCredentialsDTO) (bool, error) {
-	existingUserEntity, err := s.userRepository.GetByEmail(ctx, userCredentialsDTO.Email)
+	getByEmailRequest := mapper.MapEmailToUserGetByEmailRequest(userCredentialsDTO.Email)
+
+	getByEmailResponse, err := s.userService.GetByEmail(ctx, getByEmailRequest)
 	if err != nil {
 		s.logger.Error("Error while getting user: ", err)
 		return false, customErr.NewInternalServerError("Failed to check user email")
 	}
 
-	if existingUserEntity != nil {
+	if getByEmailResponse.User != nil {
 		return false, customErr.NewAlreadyExistsError("Email already exists")
 	}
 
@@ -57,10 +59,10 @@ func (s *AuthService) SignUp(ctx context.Context, userCredentialsDTO *dto.UserCr
 
 	userCredentialsDTO.Password = hashedPassword
 
-	userCreateEntity := mapper.MapUserCredentialsDTOToDomainUser(userCredentialsDTO)
-	userCreateEntity.Salt = localSalt
+	createRequest := mapper.MapUserCredentialsDTOToUserCreateRequest(userCredentialsDTO)
+	createRequest.Salt = localSalt
 
-	_, err = s.userRepository.Create(ctx, userCreateEntity)
+	_, err = s.userService.Create(ctx, createRequest)
 	if err != nil {
 		s.logger.Error("Error while creating user: ", err)
 		return false, customErr.NewInternalServerError("Failed to create a user")
@@ -70,63 +72,71 @@ func (s *AuthService) SignUp(ctx context.Context, userCredentialsDTO *dto.UserCr
 }
 
 func (s *AuthService) SignIn(ctx context.Context, userCredentialsDTO *dto.UserCredentialsDTO) (*dto.UserTokensDTO, error) {
-	existingUserEntity, err := s.userRepository.GetByEmail(ctx, userCredentialsDTO.Email)
+	getByEmailRequest := mapper.MapEmailToUserGetByEmailRequest(userCredentialsDTO.Email)
+
+	getByEmailResponse, err := s.userService.GetByEmail(ctx, getByEmailRequest)
 	if err != nil {
 		s.logger.Error("Error while getting user: ", err)
 		return nil, customErr.NewInternalServerError("Failed to check user email")
 	}
 
-	if existingUserEntity == nil {
+	if getByEmailResponse.User == nil {
 		return nil, customErr.NewInvalidCredentialsError("Invalid login or password")
 	}
 
-	passwordIsValid := s.passwordService.VerifyPassword(userCredentialsDTO.Password, existingUserEntity.Password, existingUserEntity.Salt)
+	passwordIsValid := s.passwordService.VerifyPassword(userCredentialsDTO.Password, getByEmailResponse.User.Password, getByEmailResponse.User.Salt)
 	if !passwordIsValid {
 		return nil, customErr.NewInvalidCredentialsError("Invalid login or password")
 	}
 
-	accessToken, refreshToken, err := s.jwtService.GenerateTokens(existingUserEntity.Id)
+	accessToken, refreshToken, err := s.jwtService.GenerateTokens(getByEmailResponse.User.Id)
 	if err != nil {
 		s.logger.Error("Error while generating tokens: ", err)
 		return nil, customErr.NewInternalServerError("Token generation error")
 	}
 
-	existingUserEntity.RefreshToken = refreshToken
+	getByEmailResponse.User.RefreshToken = refreshToken
+	updateRequest := mapper.MapUserGetByEmailResponseToUserUpdateRequest(getByEmailResponse)
 
-	_, err = s.userRepository.Update(ctx, existingUserEntity.Id, existingUserEntity)
+	_, err = s.userService.Update(ctx, updateRequest)
 	if err != nil {
 		s.logger.Error("Error while updating user: ", err)
 		return nil, customErr.NewInternalServerError("Token updating error")
 	}
 
-	return mapper.MapToUserTokensDTO(accessToken, refreshToken), nil
+	return mapper.MapTokensToUserTokensDTO(accessToken, refreshToken), nil
 }
 
-func (s *AuthService) SignOut(ctx context.Context, refreshTokenDTO *dto.UserTokenDTO) error {
+func (s *AuthService) SignOut(ctx context.Context, refreshTokenDTO *dto.UserTokenDTO) (bool, error) {
 	claims, err := s.jwtService.ValidateToken(refreshTokenDTO.Token)
 	if err != nil {
-		return err
+		return false, err
 	}
 
-	existingUserEntity, err := s.userRepository.GetById(ctx, claims.Id)
+	getByIdRequest := mapper.MapIdToUserGetByIdRequest(claims.Id)
+
+	getByIdResponse, err := s.userService.GetById(ctx, getByIdRequest)
 	if err != nil {
 		s.logger.Error("Error while getting user: ", err)
-		return customErr.NewInternalServerError("Failed to check user id")
+		return false, customErr.NewInternalServerError("Failed to check user id")
 	}
 
-	if existingUserEntity == nil {
-		return customErr.NewNotFoundError("User not found")
+	if getByIdResponse == nil {
+		return false, customErr.NewNotFoundError("User not found")
 	}
 
-	existingUserEntity.RefreshToken = ""
+	getByIdResponse.User.RefreshToken = ""
+	getByIdResponse.User.Id = claims.Id
 
-	_, err = s.userRepository.Update(ctx, claims.Id, existingUserEntity)
+	updateRequest := mapper.MapUserGetByIdResponseToUserUpdateRequest(getByIdResponse)
+
+	_, err = s.userService.Update(ctx, updateRequest)
 	if err != nil {
 		s.logger.Error("Error while updating user: ", err)
-		return customErr.NewInternalServerError("User updating error")
+		return false, customErr.NewInternalServerError("User updating error")
 	}
 
-	return nil
+	return true, nil
 }
 
 func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserTokenDTO) (*dto.UserTokensDTO, error) {
@@ -135,33 +145,38 @@ func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserToke
 		return nil, err
 	}
 
-	existingUserEntity, err := s.userRepository.GetById(ctx, claims.Id)
+	getByIdRequest := mapper.MapIdToUserGetByIdRequest(claims.Id)
+
+	getByIdResponse, err := s.userService.GetById(ctx, getByIdRequest)
 	if err != nil {
 		s.logger.Error("Error while getting user: ", err)
 		return nil, customErr.NewInternalServerError("Failed to check user id")
 	}
 
-	if existingUserEntity == nil {
+	if getByIdResponse == nil {
 		return nil, customErr.NewNotFoundError("User not found")
 	}
 
-	if refreshTokenDTO.Token != existingUserEntity.RefreshToken {
+	if refreshTokenDTO.Token != getByIdResponse.User.RefreshToken {
 		return nil, customErr.NewInvalidTokenError("Invalid refresh token")
 	}
 
-	accessToken, refreshToken, err := s.jwtService.GenerateTokens(existingUserEntity.Id)
+	accessToken, refreshToken, err := s.jwtService.GenerateTokens(getByIdResponse.User.Id)
 	if err != nil {
 		s.logger.Error("Error while generating tokens: ", err)
 		return nil, customErr.NewInternalServerError("Token generation error")
 	}
 
-	existingUserEntity.RefreshToken = refreshToken
+	getByIdResponse.User.RefreshToken = refreshToken
+	getByIdResponse.User.Id = claims.Id
 
-	_, err = s.userRepository.Update(ctx, claims.Id, existingUserEntity)
+	updateRequest := mapper.MapUserGetByIdResponseToUserUpdateRequest(getByIdResponse)
+
+	_, err = s.userService.Update(ctx, updateRequest)
 	if err != nil {
 		s.logger.Error("Error while updating user: ", err)
 		return nil, customErr.NewInternalServerError("Token updating error")
 	}
 
-	return mapper.MapToUserTokensDTO(accessToken, refreshToken), nil
+	return mapper.MapTokensToUserTokensDTO(accessToken, refreshToken), nil
 }

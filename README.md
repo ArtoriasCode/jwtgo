@@ -2,12 +2,16 @@
 
 A Go (Golang) Backend Clean Architecture project with Gin, MongoDB and JWT Authentication Middleware.
 
-The project was created for educational purposes and can be used in your projects as needed.
+The project was created for educational purposes and is not ideal. It has its shortcomings, which are gradually being corrected.
 
 ## Project architecture
-The architecture of a web application consists of 5 main layers:
+The architecture of a web application consists of these layers:
 - Reverse Proxy
 - API Gateway
+- Microservice
+- Database
+
+The architecture of the microservice application consists of these layers:
 - Server
 - Service
 - Repository
@@ -148,99 +152,126 @@ cd jwtgo
 
 ## Complete project folder structure
 ```
-├───.env
-├───.gitignore
-├───go.mod
-├───go.sum
-├───LICENSE
-├───README.md
-├───taskfile.yaml
-├───build
-│   └───package
-│       ├───api.Dockerfile
-│       └───auth.Dockerfile
-├───cmd
-│   ├───api
-│   │   └───main.go
-│   └───auth
-│       └───main.go
-├───configs
-│   └───nginx.conf
-├───deployments
-│   └───docker-compose.yaml
-├───internal
-│   ├───app
-│   │   ├───api
-│   │   │   ├───main.go
-│   │   │   ├───config
-│   │   │   │   └───config.go
-│   │   │   └───controller
-│   │   │       └───http
-│   │   │           ├───dto
-│   │   │           │   └───user.go
-│   │   │           ├───mapper
-│   │   │           │   └───user.go
-│   │   │           ├───middleware
-│   │   │           │   ├───security.go
-│   │   │           │   └───validation.go
-│   │   │           └───v1
-│   │   │               └───auth.go
-│   │   └───auth
-│   │       ├───main.go
-│   │       ├───adapter
-│   │       │   └───mongodb
-│   │       │       ├───entity
-│   │       │       │   └───user.go
-│   │       │       ├───mapper
-│   │       │       │   └───user.go
-│   │       │       └───repository
-│   │       │           └───user.go
-│   │       ├───config
-│   │       │   └───config.go
-│   │       ├───entity
-│   │       │   └───user.go
-│   │       ├───server
-│   │       │   └───grpc
-│   │       │       ├───dto
-│   │       │       │   └───user.go
-│   │       │       ├───mapper
-│   │       │       │   └───user.go
-│   │       │       └───v1
-│   │       │           └───auth.go
-│   │       └───service
-│   │           └───auth.go
-│   ├───pkg
-│   │   ├───error
-│   │   │   ├───auth.go
-│   │   │   ├───jwt.go
-│   │   │   ├───repository.go
-│   │   │   └───server.go
-│   │   ├───interface
-│   │   │   ├───repository
-│   │   │   │       user.go
-│   │   │   └───service
-│   │   │       ├───auth.go
-│   │   │       ├───jwt.go
-│   │   │       └───password.go
-│   │   ├───request
-│   │   │   │   response.go
-│   │   │   └───schema
-│   │   │       └───response.go
-│   │   └───service
-│   │       │   jwt.go
-│   │       │   password.go
-│   │       └───schema
-│   │           └───jwt.go
-│   └───proto
-│       └───auth
-│           ├───auth.pb.go
-│           └───auth_grpc.pb.go
-├───pkg
-│   ├───client
-│   │       mongodb.go
-│   └───logging
-│       └───logger.go
-└───proto
-    └───auth
-        └───auth.proto
+├── build
+│   └── package
+│       ├── api.Dockerfile
+│       ├── auth.Dockerfile
+│       └── user.Dockerfile
+├── cmd
+│   ├── api
+│   │   └── main.go
+│   ├── auth
+│   │   └── main.go
+│   └── user
+│       └── main.go
+├── configs
+│   └── nginx.conf
+├── deployments
+│   └── docker-compose.yaml
+├── internal
+│   ├── app
+│   │   ├── api
+│   │   │   ├── config
+│   │   │   │   └── config.go
+│   │   │   ├── controller
+│   │   │   │   └── http
+│   │   │   │       ├── dto
+│   │   │   │       │   └── user.go
+│   │   │   │       ├── mapper
+│   │   │   │       │   └── user.go
+│   │   │   │       ├── middleware
+│   │   │   │       │   ├── security.go
+│   │   │   │       │   └── validation.go
+│   │   │   │       └── v1
+│   │   │   │           └── auth.go
+│   │   │   └── main.go
+│   │   ├── auth
+│   │   │   ├── config
+│   │   │   │   └── config.go
+│   │   │   ├── interface
+│   │   │   │   └── service
+│   │   │   │       └── auth.go
+│   │   │   ├── server
+│   │   │   │   └── grpc
+│   │   │   │       ├── dto
+│   │   │   │       │   └── user.go
+│   │   │   │       ├── mapper
+│   │   │   │       │   └── user.go
+│   │   │   │       └── v1
+│   │   │   │           └── auth.go
+│   │   │   ├── service
+│   │   │   │   └── auth.go
+│   │   │   └── main.go
+│   │   └── user
+│   │       ├── adapter
+│   │       │   └── mongodb
+│   │       │       ├── entity
+│   │       │       │   └── user.go
+│   │       │       ├── mapper
+│   │       │       │   └── user.go
+│   │       │       └── repository
+│   │       │           └── user.go
+│   │       ├── config
+│   │       │   └── config.go
+│   │       ├── entity
+│   │       │   └── user.go
+│   │       ├── interface
+│   │       │   ├── repository
+│   │       │   │   └── user.go
+│   │       │   └── service
+│   │       │       └── user.go
+│   │       ├── server
+│   │       │   └── grpc
+│   │       │       ├── dto
+│   │       │       │   └── user.go
+│   │       │       ├── mapper
+│   │       │       │   └── user.go
+│   │       │       └── v1
+│   │       │           └── user.go
+│   │       ├── service
+│   │       │   └── user.go
+│   │       └── main.go
+│   └── pkg
+│       ├── error
+│       │   ├── auth.go
+│       │   ├── jwt.go
+│       │   ├── repository.go
+│       │   └── server.go
+│       ├── interface
+│       │   └── service
+│       │       ├── jwt.go
+│       │       └── password.go
+│       ├── proto
+│       │   ├── auth
+│       │   │   ├── auth.pb.go
+│       │   │   └── auth_grpc.pb.go
+│       │   └── user
+│       │       ├── user.pb.go
+│       │       └── user_grpc.pb.go
+│       ├── request
+│       │   ├── schema
+│       │   │   └── response.go
+│       │   └── response.go
+│       └── service
+│           ├── schema
+│           │   └── jwt.go
+│           ├── jwt.go
+│           └── password.go
+├── pkg
+│   ├── client
+│   │   └── mongodb.go
+│   ├── logging
+│   │   └── logger.go
+│   └── proto
+│       ├── auth
+│       │   └── auth.proto
+│       └── user
+│           └── user.proto
+├── .env
+├── .gitignore
+├── go.mod
+├── go.sum
+├── LICENSE
+├── README.md
+└── taskfile.yaml
 ```

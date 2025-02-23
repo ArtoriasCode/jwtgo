@@ -4,8 +4,8 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
-	mongoEntity "jwtgo/internal/app/auth/adapter/mongodb/entity"
-	domainEntity "jwtgo/internal/app/auth/entity"
+	mongoEntity "jwtgo/internal/app/user/adapter/mongodb/entity"
+	domainEntity "jwtgo/internal/app/user/entity"
 	customErr "jwtgo/internal/pkg/error"
 )
 

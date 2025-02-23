@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "jwtgo/internal/user;user";
+
+service UserService {
+  rpc GetById (GetByIdRequest) returns (GetByIdResponse);
+  rpc GetByEmail (GetByEmailRequest) returns (GetByEmailResponse);
+  rpc Create (CreateRequest) returns (CreateResponse);
+  rpc Update (UpdateRequest) returns (UpdateResponse);
+  rpc Delete (DeleteRequest) returns (DeleteResponse);
+}
+
+message User {
+  string id = 1;
+  string email = 2;
+  string password = 3;
+  string salt = 4;
+  string refresh_token = 5;
+  int64 created_at = 6;
+  int64 updated_at = 7;
+}
+
+message GetByIdRequest {
+  string id = 1;
+}
+
+message GetByIdResponse {
+  User user = 1;
+}
+
+message GetByEmailRequest {
+  string email = 1;
+}
+
+message GetByEmailResponse {
+  User user = 1;
+}
+
+message CreateRequest {
+  string email = 1;
+  string password = 2;
+  string salt = 3;
+  string refresh_token = 4;
+}
+
+message CreateResponse {
+  User user = 1;
+}
+
+message UpdateRequest {
+  string id = 1;
+  string email = 2;
+  string password = 3;
+  string salt = 4;
+  string refresh_token = 5;
+}
+
+message UpdateResponse {
+  User user = 1;
+}
+
+message DeleteRequest {
+  string id = 1;
+}
+
+message DeleteResponse {
+  bool success = 1;
+}

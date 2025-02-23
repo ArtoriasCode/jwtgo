@@ -7,15 +7,15 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	serviceInterface "jwtgo/internal/app/auth/interface/service"
 	"jwtgo/internal/app/auth/server/grpc/mapper"
 	customErr "jwtgo/internal/pkg/error"
-	serviceInterface "jwtgo/internal/pkg/interface/service"
-	pb "jwtgo/internal/proto/auth"
+	authPb "jwtgo/internal/pkg/proto/auth"
 	"jwtgo/pkg/logging"
 )
 
 type AuthServer struct {
-	pb.UnimplementedAuthServiceServer
+	authPb.UnimplementedAuthServiceServer
 	authService serviceInterface.AuthService
 	logger      *logging.Logger
 }
@@ -50,46 +50,46 @@ func (s *AuthServer) handeError(err error) codes.Code {
 	return statusCode
 }
 
-func (s *AuthServer) SignUp(ctx context.Context, request *pb.SignUpRequest) (*pb.SignUpResponse, error) {
-	userCredentialsDTO := mapper.MapSignUpRequestToUserCredentialsDTO(request)
+func (s *AuthServer) SignUp(ctx context.Context, request *authPb.SignUpRequest) (*authPb.SignUpResponse, error) {
+	userCredentialsDTO := mapper.MapAuthSignUpRequestToUserCredentialsDTO(request)
 
 	_, err := s.authService.SignUp(ctx, userCredentialsDTO)
 	if err != nil {
-		return nil, status.Errorf(s.handeError(err), err.Error())
+		return &authPb.SignUpResponse{}, status.Errorf(s.handeError(err), err.Error())
 	}
 
-	return &pb.SignUpResponse{Message: "User successfully registered"}, nil
+	return &authPb.SignUpResponse{Message: "User successfully registered"}, nil
 }
 
-func (s *AuthServer) SignIn(ctx context.Context, request *pb.SignInRequest) (*pb.SignInResponse, error) {
-	userCredentialsDTO := mapper.MapSignInRequestToUserCredentialsDTO(request)
+func (s *AuthServer) SignIn(ctx context.Context, request *authPb.SignInRequest) (*authPb.SignInResponse, error) {
+	userCredentialsDTO := mapper.MapAuthSignInRequestToUserCredentialsDTO(request)
 
 	userTokensDTO, err := s.authService.SignIn(ctx, userCredentialsDTO)
 	if err != nil {
-		return nil, status.Errorf(s.handeError(err), err.Error())
+		return &authPb.SignInResponse{}, status.Errorf(s.handeError(err), err.Error())
 	}
 
-	return mapper.MapUserTokensDTOToSignInResponse(userTokensDTO, "User successfully logged in"), nil
+	return mapper.MapUserTokensDTOToAuthSignInResponse(userTokensDTO, "User successfully logged in"), nil
 }
 
-func (s *AuthServer) SignOut(ctx context.Context, request *pb.SignOutRequest) (*pb.SignOutResponse, error) {
-	userAccessTokenDTO := mapper.MapSignOutRequestToUserTokenDTO(request)
+func (s *AuthServer) SignOut(ctx context.Context, request *authPb.SignOutRequest) (*authPb.SignOutResponse, error) {
+	userAccessTokenDTO := mapper.MapAuthSignOutRequestToUserTokenDTO(request)
 
-	err := s.authService.SignOut(ctx, userAccessTokenDTO)
+	_, err := s.authService.SignOut(ctx, userAccessTokenDTO)
 	if err != nil {
-		return nil, status.Errorf(s.handeError(err), err.Error())
+		return &authPb.SignOutResponse{}, status.Errorf(s.handeError(err), err.Error())
 	}
 
-	return &pb.SignOutResponse{Message: "User successfully logged out"}, nil
+	return &authPb.SignOutResponse{Message: "User successfully logged out"}, nil
 }
 
-func (s *AuthServer) Refresh(ctx context.Context, request *pb.RefreshRequest) (*pb.RefreshResponse, error) {
-	userRefreshTokenDTO := mapper.MapRefreshRequestToUserTokenDTO(request)
+func (s *AuthServer) Refresh(ctx context.Context, request *authPb.RefreshRequest) (*authPb.RefreshResponse, error) {
+	userRefreshTokenDTO := mapper.MapAuthRefreshRequestToUserTokenDTO(request)
 
 	userTokensDTO, err := s.authService.Refresh(ctx, userRefreshTokenDTO)
 	if err != nil {
-		return nil, status.Errorf(s.handeError(err), err.Error())
+		return &authPb.RefreshResponse{}, status.Errorf(s.handeError(err), err.Error())
 	}
 
-	return mapper.MapUserTokensDTOToRefreshResponse(userTokensDTO, "Tokens successfully updated"), nil
+	return mapper.MapUserTokensDTOToAuthRefreshResponse(userTokensDTO, "Tokens successfully updated"), nil
 }

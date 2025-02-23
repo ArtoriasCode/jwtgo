@@ -10,8 +10,8 @@ import (
 	"jwtgo/internal/app/api/controller/http/middleware"
 	"jwtgo/internal/app/api/controller/http/v1"
 	serviceInterface "jwtgo/internal/pkg/interface/service"
+	authPb "jwtgo/internal/pkg/proto/auth"
 	servicePkg "jwtgo/internal/pkg/service"
-	pb "jwtgo/internal/proto/auth"
 	"jwtgo/pkg/logging"
 )
 
@@ -21,7 +21,7 @@ type ApiGateway struct {
 	Router            *gin.Engine
 	JWTService        serviceInterface.JWTService
 	ValidatorClient   *validator.Validate
-	AuthServiceClient pb.AuthServiceClient
+	AuthServiceClient authPb.AuthServiceClient
 }
 
 func NewApiGateway() *ApiGateway {
@@ -45,7 +45,7 @@ func (app *ApiGateway) initializeAuthServiceClient() {
 		app.Logger.Fatal("Failed to connect to Auth server: ", err)
 	}
 
-	app.AuthServiceClient = pb.NewAuthServiceClient(conn)
+	app.AuthServiceClient = authPb.NewAuthServiceClient(conn)
 }
 
 func (app *ApiGateway) InitializeConfig() {
@@ -82,7 +82,7 @@ func (app *ApiGateway) InitializeControllers() {
 	authController := v1.NewAuthController(app.AuthServiceClient, app.ValidatorClient, app.Logger)
 	authController.Register(app.Router)
 
-	app.Router.Use(middleware.Authentication(app.JWTService))
+	app.Router.Use(middleware.Authentication(app.JWTService, app.AuthServiceClient))
 }
 
 func (app *ApiGateway) Run() {

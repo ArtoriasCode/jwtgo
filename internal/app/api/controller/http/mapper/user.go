@@ -2,31 +2,31 @@ package mapper
 
 import (
 	"jwtgo/internal/app/api/controller/http/dto"
-	pb "jwtgo/internal/proto/auth"
+	authPb "jwtgo/internal/pkg/proto/auth"
 )
 
-func MapUserCredentialsDTOToSignUpRequest(dto *dto.UserCredentialsDTO) *pb.SignUpRequest {
-	return &pb.SignUpRequest{
+func MapUserCredentialsDTOToAuthSignUpRequest(dto *dto.UserCredentialsDTO) *authPb.SignUpRequest {
+	return &authPb.SignUpRequest{
 		Email:    dto.Email,
 		Password: dto.Password,
 	}
 }
 
-func MapUserCredentialsDTOToSignInRequest(dto *dto.UserCredentialsDTO) *pb.SignInRequest {
-	return &pb.SignInRequest{
+func MapUserCredentialsDTOToAuthSignInRequest(dto *dto.UserCredentialsDTO) *authPb.SignInRequest {
+	return &authPb.SignInRequest{
 		Email:    dto.Email,
 		Password: dto.Password,
 	}
 }
 
-func MapToSignOutRequest(accessToken string) *pb.SignOutRequest {
-	return &pb.SignOutRequest{
+func MapAccessTokenToAuthRefreshRequest(accessToken string) *authPb.SignOutRequest {
+	return &authPb.SignOutRequest{
 		AccessToken: accessToken,
 	}
 }
 
-func MapToRefreshRequest(refreshToken string) *pb.RefreshRequest {
-	return &pb.RefreshRequest{
+func MapRefreshTokenToAuthRefreshRequest(refreshToken string) *authPb.RefreshRequest {
+	return &authPb.RefreshRequest{
 		RefreshToken: refreshToken,
 	}
 }

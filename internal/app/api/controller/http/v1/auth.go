@@ -13,20 +13,20 @@ import (
 	"jwtgo/internal/app/api/controller/http/dto"
 	"jwtgo/internal/app/api/controller/http/mapper"
 	"jwtgo/internal/app/api/controller/http/middleware"
+	authPb "jwtgo/internal/pkg/proto/auth"
 	"jwtgo/internal/pkg/request"
 	"jwtgo/internal/pkg/request/schema"
-	pb "jwtgo/internal/proto/auth"
 	"jwtgo/pkg/logging"
 )
 
 type AuthController struct {
-	authService      pb.AuthServiceClient
+	authService      authPb.AuthServiceClient
 	requestValidator *validator.Validate
 	logger           *logging.Logger
 }
 
 func NewAuthController(
-	authService pb.AuthServiceClient,
+	authService authPb.AuthServiceClient,
 	requestValidator *validator.Validate,
 	logger *logging.Logger,
 ) *AuthController {
@@ -52,16 +52,18 @@ func (ac *AuthController) handleError(c *gin.Context, err error, defaultMessage 
 		return
 	}
 
+	message := statusData.Message()
+
 	switch statusData.Code() {
 	case codes.AlreadyExists:
-		c.JSON(http.StatusConflict, gin.H{"message": statusData.Message()})
+		c.JSON(http.StatusConflict, gin.H{"message": message})
 	case codes.Unauthenticated:
-		c.JSON(http.StatusUnauthorized, gin.H{"message": statusData.Message()})
+		c.JSON(http.StatusUnauthorized, gin.H{"message": message})
 	case codes.NotFound:
-		c.JSON(http.StatusUnauthorized, gin.H{"message": statusData.Message()})
+		c.JSON(http.StatusUnauthorized, gin.H{"message": message})
 	default:
 		ac.logger.Error(defaultMessage+": ", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"message": statusData.Message()})
+		c.JSON(http.StatusInternalServerError, gin.H{"message": message})
 	}
 }
 
@@ -71,7 +73,7 @@ func (ac *AuthController) SignUp() gin.HandlerFunc {
 		defer cancel()
 
 		userCredentialsDTO := c.MustGet("validatedBody").(dto.UserCredentialsDTO)
-		signUpRequest := mapper.MapUserCredentialsDTOToSignUpRequest(&userCredentialsDTO)
+		signUpRequest := mapper.MapUserCredentialsDTOToAuthSignUpRequest(&userCredentialsDTO)
 
 		signUpResponse, err := ac.authService.SignUp(ctx, signUpRequest)
 		if err != nil {
@@ -89,7 +91,7 @@ func (ac *AuthController) SignIn() gin.HandlerFunc {
 		defer cancel()
 
 		userCredentialsDTO := c.MustGet("validatedBody").(dto.UserCredentialsDTO)
-		signInRequest := mapper.MapUserCredentialsDTOToSignInRequest(&userCredentialsDTO)
+		signInRequest := mapper.MapUserCredentialsDTOToAuthSignInRequest(&userCredentialsDTO)
 
 		signInResponse, err := ac.authService.SignIn(ctx, signInRequest)
 		if err != nil {
@@ -117,7 +119,7 @@ func (ac *AuthController) SignOut() gin.HandlerFunc {
 			return
 		}
 
-		signOutRequest := mapper.MapToSignOutRequest(accessToken)
+		signOutRequest := mapper.MapAccessTokenToAuthRefreshRequest(accessToken)
 
 		signOutResponse, err := ac.authService.SignOut(ctx, signOutRequest)
 		if err != nil {
@@ -145,7 +147,7 @@ func (ac *AuthController) Refresh() gin.HandlerFunc {
 			return
 		}
 
-		refreshRequest := mapper.MapToRefreshRequest(refreshToken)
+		refreshRequest := mapper.MapRefreshTokenToAuthRefreshRequest(refreshToken)
 
 		refreshResponse, err := ac.authService.Refresh(ctx, refreshRequest)
 		if err != nil {

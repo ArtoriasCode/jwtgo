@@ -1,8 +1,6 @@
 package entity
 
 import (
-	"time"
-
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -12,6 +10,6 @@ type User struct {
 	Password     string             `bson:"password" json:"password"`
 	Salt         string             `bson:"salt" json:"salt"`
 	RefreshToken string             `bson:"refresh_token" json:"refresh_token"`
-	CreatedAt    time.Time          `bson:"created_at" json:"created_at"`
-	UpdatedAt    time.Time          `bson:"updated_at" json:"updated_at"`
+	CreatedAt    int64              `bson:"created_at" json:"created_at"`
+	UpdatedAt    int64              `bson:"updated_at" json:"updated_at"`
 }

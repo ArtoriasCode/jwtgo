@@ -10,9 +10,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 
-	mongoEntity "jwtgo/internal/app/auth/adapter/mongodb/entity"
-	"jwtgo/internal/app/auth/adapter/mongodb/mapper"
-	domainEntity "jwtgo/internal/app/auth/entity"
+	mongoEntity "jwtgo/internal/app/user/adapter/mongodb/entity"
+	"jwtgo/internal/app/user/adapter/mongodb/mapper"
+	domainEntity "jwtgo/internal/app/user/entity"
 	customErr "jwtgo/internal/pkg/error"
 	"jwtgo/pkg/logging"
 )
@@ -41,7 +41,8 @@ func (ur *UserRepository) GetById(ctx context.Context, id string) (*domainEntity
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, nil
 		}
-		return nil, customErr.NewInternalServerError("Failed to get user")
+		ur.logger.Error("Error while getting user by id: ", err)
+		return nil, customErr.NewInternalServerError("Failed to get user by id")
 	}
 
 	return mapper.MapMongoUserToDomainUser(&user), nil
@@ -55,7 +56,8 @@ func (ur *UserRepository) GetByEmail(ctx context.Context, email string) (*domain
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, nil
 		}
-		return nil, customErr.NewInternalServerError("Failed to get user")
+		ur.logger.Error("Error while getting user by email: ", err)
+		return nil, customErr.NewInternalServerError("Failed to get user by email")
 	}
 
 	return mapper.MapMongoUserToDomainUser(&user), nil
@@ -64,6 +66,7 @@ func (ur *UserRepository) GetByEmail(ctx context.Context, email string) (*domain
 func (ur *UserRepository) GetAll(ctx context.Context) ([]*domainEntity.User, error) {
 	cursor, err := ur.collection.Find(ctx, bson.M{})
 	if err != nil {
+		ur.logger.Error("Error while getting users: ", err)
 		return nil, customErr.NewInternalServerError("Failed to get users")
 	}
 
@@ -75,42 +78,72 @@ func (ur *UserRepository) GetAll(ctx context.Context) ([]*domainEntity.User, err
 
 	var users []*mongoEntity.User
 	if err := cursor.All(ctx, &users); err != nil {
+		ur.logger.Error("Error while getting users: ", err)
 		return nil, err
 	}
 
 	return mapper.MapMongoUsersToDomainUsers(users), nil
 }
 
-func (ur *UserRepository) Create(ctx context.Context, domainUser *domainEntity.User) (bool, error) {
+func (ur *UserRepository) Create(ctx context.Context, domainUser *domainEntity.User) (*domainEntity.User, error) {
 	mongoUser, err := mapper.MapDomainUserToMongoUser(domainUser)
 	if err != nil {
 		ur.logger.Error("Error while mapping user: ", err)
-		return false, err
+		return nil, err
 	}
 
-	_, err = ur.collection.InsertOne(ctx, mongoUser)
+	now := time.Now().Unix()
+	mongoUser.CreatedAt = now
+	mongoUser.UpdatedAt = now
+
+	result, err := ur.collection.InsertOne(ctx, mongoUser)
 	if err != nil {
-		return false, customErr.NewInternalServerError("Failed to create a user")
+		ur.logger.Error("Error while creating user: ", err)
+		return nil, customErr.NewInternalServerError("Failed to create a user")
 	}
 
-	return true, nil
+	objID, ok := result.InsertedID.(primitive.ObjectID)
+	if !ok {
+		return nil, customErr.NewInternalServerError("Failed to convert inserted ID to ObjectID")
+	}
+
+	var createdMongoUser mongoEntity.User
+	err = ur.collection.FindOne(ctx, bson.M{"_id": objID}).Decode(&createdMongoUser)
+	if err != nil {
+		ur.logger.Error("Error while getting user: ", err)
+		return nil, customErr.NewInternalServerError("Failed to retrieve created user")
+	}
+
+	return mapper.MapMongoUserToDomainUser(&createdMongoUser), nil
 }
 
-func (ur *UserRepository) Update(ctx context.Context, id string, domainUser *domainEntity.User) (bool, error) {
+func (ur *UserRepository) Update(ctx context.Context, id string, domainUser *domainEntity.User) (*domainEntity.User, error) {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return false, customErr.NewInternalServerError("Invalid user ID format")
+		return nil, customErr.NewInternalServerError("Invalid user ID format")
 	}
 
-	domainUser.UpdatedAt = time.Now().UTC()
+	domainUser.UpdatedAt = time.Now().Unix()
 	bsonUser := mapper.MapDomainUserToBsonUser(domainUser)
 
-	_, err = ur.collection.UpdateOne(ctx, bson.M{"_id": objID}, bson.M{"$set": bsonUser})
+	result, err := ur.collection.UpdateOne(ctx, bson.M{"_id": objID}, bson.M{"$set": bsonUser})
 	if err != nil {
-		return false, customErr.NewInternalServerError("Failed to update user")
+		ur.logger.Error("Error while updating user: ", err)
+		return nil, customErr.NewInternalServerError("Failed to update user")
 	}
 
-	return true, nil
+	if result.MatchedCount == 0 {
+		return nil, customErr.NewNotFoundError("User not found")
+	}
+
+	var updatedMongoUser mongoEntity.User
+	err = ur.collection.FindOne(ctx, bson.M{"_id": objID}).Decode(&updatedMongoUser)
+	if err != nil {
+		ur.logger.Error("Error while getting user: ", err)
+		return nil, customErr.NewInternalServerError("Failed to retrieve updated user")
+	}
+
+	return mapper.MapMongoUserToDomainUser(&updatedMongoUser), nil
 }
 
 func (ur *UserRepository) Delete(ctx context.Context, id string) (bool, error) {
@@ -121,6 +154,7 @@ func (ur *UserRepository) Delete(ctx context.Context, id string) (bool, error) {
 
 	_, err = ur.collection.DeleteOne(ctx, bson.M{"_id": objID})
 	if err != nil {
+		ur.logger.Error("Error while deleting user: ", err)
 		return false, customErr.NewInternalServerError("Failed to delete user")
 	}
 
