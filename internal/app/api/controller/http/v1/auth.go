@@ -20,18 +20,18 @@ import (
 )
 
 type AuthController struct {
-	authService      authPb.AuthServiceClient
+	authMicroService authPb.AuthServiceClient
 	requestValidator *validator.Validate
 	logger           *logging.Logger
 }
 
 func NewAuthController(
-	authService authPb.AuthServiceClient,
+	authMicroService authPb.AuthServiceClient,
 	requestValidator *validator.Validate,
 	logger *logging.Logger,
 ) *AuthController {
 	return &AuthController{
-		authService:      authService,
+		authMicroService: authMicroService,
 		requestValidator: requestValidator,
 		logger:           logger,
 	}
@@ -75,7 +75,7 @@ func (ac *AuthController) SignUp() gin.HandlerFunc {
 		userCredentialsDTO := c.MustGet("validatedBody").(dto.UserCredentialsDTO)
 		signUpRequest := mapper.MapUserCredentialsDTOToAuthSignUpRequest(&userCredentialsDTO)
 
-		signUpResponse, err := ac.authService.SignUp(ctx, signUpRequest)
+		signUpResponse, err := ac.authMicroService.SignUp(ctx, signUpRequest)
 		if err != nil {
 			ac.handleError(c, err, "Error while sign up")
 			return
@@ -93,7 +93,7 @@ func (ac *AuthController) SignIn() gin.HandlerFunc {
 		userCredentialsDTO := c.MustGet("validatedBody").(dto.UserCredentialsDTO)
 		signInRequest := mapper.MapUserCredentialsDTOToAuthSignInRequest(&userCredentialsDTO)
 
-		signInResponse, err := ac.authService.SignIn(ctx, signInRequest)
+		signInResponse, err := ac.authMicroService.SignIn(ctx, signInRequest)
 		if err != nil {
 			ac.handleError(c, err, "Error while sign in")
 			return
@@ -121,7 +121,7 @@ func (ac *AuthController) SignOut() gin.HandlerFunc {
 
 		signOutRequest := mapper.MapAccessTokenToAuthRefreshRequest(accessToken)
 
-		signOutResponse, err := ac.authService.SignOut(ctx, signOutRequest)
+		signOutResponse, err := ac.authMicroService.SignOut(ctx, signOutRequest)
 		if err != nil {
 			ac.handleError(c, err, "Error while sign out")
 			return
@@ -149,7 +149,7 @@ func (ac *AuthController) Refresh() gin.HandlerFunc {
 
 		refreshRequest := mapper.MapRefreshTokenToAuthRefreshRequest(refreshToken)
 
-		refreshResponse, err := ac.authService.Refresh(ctx, refreshRequest)
+		refreshResponse, err := ac.authMicroService.Refresh(ctx, refreshRequest)
 		if err != nil {
 			ac.handleError(c, err, "Error while refresh")
 			return

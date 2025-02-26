@@ -32,6 +32,11 @@ func NewApiGateway() *ApiGateway {
 	}
 }
 
+func (app *ApiGateway) InitializeConfig() {
+	app.Logger.Info("Reading API gateway config...")
+	app.Config = config.GetConfig(app.Logger)
+}
+
 func (app *ApiGateway) initializeValidatorClient() {
 	app.ValidatorClient = validator.New()
 }
@@ -48,9 +53,18 @@ func (app *ApiGateway) initializeAuthServiceClient() {
 	app.AuthServiceClient = authPb.NewAuthServiceClient(conn)
 }
 
-func (app *ApiGateway) InitializeConfig() {
-	app.Logger.Info("Reading API gateway config...")
-	app.Config = config.GetConfig(app.Logger)
+func (app *ApiGateway) InitializeClients() {
+	app.Logger.Info("Clients initialization...")
+	app.initializeValidatorClient()
+	app.initializeAuthServiceClient()
+}
+
+func (app *ApiGateway) InitializeJWTService() {
+	app.JWTService = servicePkg.NewJWTService(app.Config.Security.Secret, app.Config.Security.AccessLifetime, app.Config.Security.RefreshLifetime)
+}
+
+func (app *ApiGateway) InitializeServices() {
+	app.InitializeJWTService()
 }
 
 func (app *ApiGateway) SetGinMode() {
@@ -66,16 +80,6 @@ func (app *ApiGateway) InitializeRouter() {
 	app.Router = gin.New()
 
 	app.Router.Use(gin.Logger())
-}
-
-func (app *ApiGateway) InitializeClients() {
-	app.Logger.Info("Clients initialization...")
-	app.initializeValidatorClient()
-	app.initializeAuthServiceClient()
-}
-
-func (app *ApiGateway) InitializeServices() {
-	app.JWTService = servicePkg.NewJWTService(app.Config.Security.Secret, app.Config.Security.AccessLifetime, app.Config.Security.RefreshLifetime)
 }
 
 func (app *ApiGateway) InitializeControllers() {

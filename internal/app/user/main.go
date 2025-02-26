@@ -19,7 +19,7 @@ import (
 	"jwtgo/pkg/logging"
 )
 
-type UserMicroservice struct {
+type UserMicroService struct {
 	Config      *config.Config
 	Logger      *logging.Logger
 	Router      *gin.Engine
@@ -28,20 +28,20 @@ type UserMicroservice struct {
 	UserService serviceInterface.UserService
 }
 
-func NewUserMicroservice() *UserMicroservice {
+func NewUserMicroService() *UserMicroService {
 	logger := logging.GetLogger("info")
 
-	return &UserMicroservice{
+	return &UserMicroService{
 		Logger: &logger,
 	}
 }
 
-func (app *UserMicroservice) InitializeConfig() {
+func (app *UserMicroService) InitializeConfig() {
 	app.Logger.Info("Reading application config...")
 	app.Config = config.GetConfig(app.Logger)
 }
 
-func (app *UserMicroservice) InitializeClients() {
+func (app *UserMicroService) InitializeDatabaseClient() {
 	databaseUrl := fmt.Sprintf(
 		"%s://%s:%s@%s:%d/",
 		app.Config.MongoDB.Uri,
@@ -53,18 +53,26 @@ func (app *UserMicroservice) InitializeClients() {
 	app.MongoClient = client.NewMongodbClient(databaseUrl, app.Logger).Connect()
 }
 
-func (app *UserMicroservice) InitializeServices() {
+func (app *UserMicroService) InitializeClients() {
+	app.InitializeDatabaseClient()
+}
+
+func (app *UserMicroService) InitializeUserService() {
 	userRepository := repository.NewUserRepository(app.MongoClient, app.Config.MongoDB.Database, "users", app.Logger)
 	app.UserService = service.NewUserService(userRepository, app.Logger)
 }
 
-func (app *UserMicroservice) Initialize() {
+func (app *UserMicroService) InitializeServices() {
+	app.InitializeUserService()
+}
+
+func (app *UserMicroService) Initialize() {
 	app.InitializeConfig()
 	app.InitializeClients()
 	app.InitializeServices()
 }
 
-func (app *UserMicroservice) Run() {
+func (app *UserMicroService) Run() {
 	grpcServer := grpc.NewServer()
 	userPb.RegisterUserServiceServer(grpcServer, server.NewUserServer(app.UserService, app.Logger))
 

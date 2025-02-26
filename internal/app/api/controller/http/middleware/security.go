@@ -13,7 +13,7 @@ import (
 	"jwtgo/internal/pkg/request/schema"
 )
 
-func Authentication(jwtService serviceInterface.JWTService, authService authPb.AuthServiceClient) gin.HandlerFunc {
+func Authentication(jwtService serviceInterface.JWTService, authMicroService authPb.AuthServiceClient) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		accessToken, err := c.Request.Cookie("access_token")
 		if err != nil {
@@ -34,7 +34,7 @@ func Authentication(jwtService serviceInterface.JWTService, authService authPb.A
 			ctx := c.Request.Context()
 			refreshRequest := mapper.MapRefreshTokenToAuthRefreshRequest(refreshToken.Value)
 
-			refreshResponse, err := authService.Refresh(ctx, refreshRequest)
+			refreshResponse, err := authMicroService.Refresh(ctx, refreshRequest)
 			if err != nil {
 				c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid refresh token"})
 				c.Abort()

@@ -18,7 +18,7 @@ import (
 	"jwtgo/pkg/logging"
 )
 
-type AuthMicroservice struct {
+type AuthMicroService struct {
 	Config            *config.Config
 	Logger            *logging.Logger
 	Router            *gin.Engine
@@ -28,20 +28,20 @@ type AuthMicroservice struct {
 	UserServiceClient userPb.UserServiceClient
 }
 
-func NewAuthMicroservice() *AuthMicroservice {
+func NewAuthMicroService() *AuthMicroService {
 	logger := logging.GetLogger("info")
 
-	return &AuthMicroservice{
+	return &AuthMicroService{
 		Logger: &logger,
 	}
 }
 
-func (app *AuthMicroservice) InitializeConfig() {
+func (app *AuthMicroService) InitializeConfig() {
 	app.Logger.Info("Reading application config...")
 	app.Config = config.GetConfig(app.Logger)
 }
 
-func (app *AuthMicroservice) initializeUserServiceClient() {
+func (app *AuthMicroService) initializeUserServiceClient() {
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
@@ -53,29 +53,35 @@ func (app *AuthMicroservice) initializeUserServiceClient() {
 	app.UserServiceClient = userPb.NewUserServiceClient(conn)
 }
 
-func (app *AuthMicroservice) InitializeClients() {
+func (app *AuthMicroService) InitializeClients() {
 	app.initializeUserServiceClient()
 }
 
-func (app *AuthMicroservice) InitializeJWTService() {
+func (app *AuthMicroService) InitializeJWTService() {
 	app.JWTService = servicePkg.NewJWTService(app.Config.Security.Secret, app.Config.Security.AccessLifetime, app.Config.Security.RefreshLifetime)
 }
 
-func (app *AuthMicroservice) InitializePasswordService() {
+func (app *AuthMicroService) InitializePasswordService() {
 	app.PasswordService = servicePkg.NewPasswordService(app.Config.Security.BcryptCost, app.Config.Security.Salt)
 }
 
-func (app *AuthMicroservice) InitializeAuthService() {
+func (app *AuthMicroService) InitializeAuthService() {
 	app.AuthService = service.NewAuthService(app.UserServiceClient, app.JWTService, app.PasswordService, app.Logger)
 }
 
-func (app *AuthMicroservice) InitializeServices() {
+func (app *AuthMicroService) InitializeServices() {
 	app.InitializeJWTService()
 	app.InitializePasswordService()
 	app.InitializeAuthService()
 }
 
-func (app *AuthMicroservice) Run() {
+func (app *AuthMicroService) Initialize() {
+	app.InitializeConfig()
+	app.InitializeClients()
+	app.InitializeServices()
+}
+
+func (app *AuthMicroService) Run() {
 	grpcServer := grpc.NewServer()
 	authPb.RegisterAuthServiceServer(grpcServer, server.NewAuthServer(app.AuthService, app.Logger))
 
@@ -89,10 +95,4 @@ func (app *AuthMicroservice) Run() {
 	if err := grpcServer.Serve(listener); err != nil {
 		app.Logger.Fatal("Failed to serve gRPC server: ", err)
 	}
-}
-
-func (app *AuthMicroservice) Initialize() {
-	app.InitializeConfig()
-	app.InitializeClients()
-	app.InitializeServices()
 }

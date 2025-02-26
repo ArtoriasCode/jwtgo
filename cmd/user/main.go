@@ -5,7 +5,7 @@ import (
 )
 
 func main() {
-	userMicroservice := user.NewUserMicroservice()
+	userMicroservice := user.NewUserMicroService()
 	userMicroservice.Initialize()
 	userMicroservice.Run()
 }
