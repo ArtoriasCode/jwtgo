@@ -16,7 +16,7 @@ The architecture of the microservice application consists of these layers:
 - Service
 - Repository
 
-![Image](https://raw.githubusercontent.com/Astagnar/jwtgo/refs/heads/main/assets/architecture.png)
+![Image](https://raw.githubusercontent.com/ArtoriasCode/jwtgo/refs/heads/main/assets/architecture.png)
 
 The API is accessed via Reverse Proxy, in our case it is Nginx. It handles all incoming requests and prevents access to microservices and API gateway directly.
 
@@ -32,10 +32,10 @@ The API is accessed via Reverse Proxy, in our case it is Nginx. It handles all i
 - **[Validator](https://pkg.go.dev/github.com/go-playground/validator/v10)**: Go Struct and Field validation, including Cross Field, Cross Struct, Map, Slice and Array diving.
 
 ## Request flow without JWT authentication middleware
-![Image](https://raw.githubusercontent.com/Astagnar/jwtgo/refs/heads/main/assets/without-jwt.png)
+![Image](https://raw.githubusercontent.com/ArtoriasCode/jwtgo/refs/heads/main/assets/without-jwt.png)
 
 ## Request flow with JWT authentication middleware
-![Image](https://raw.githubusercontent.com/Astagnar/jwtgo/refs/heads/main/assets/with-jwt.png)
+![Image](https://raw.githubusercontent.com/ArtoriasCode/jwtgo/refs/heads/main/assets/with-jwt.png)
 
 ## How to run the project?
 First, download it and navigate to the root directory:
@@ -44,7 +44,7 @@ First, download it and navigate to the root directory:
 cd your-workspace
 
 # Clone the project into your workspace
-git clone https://github.com/Astagnar/jwtgo.git
+git clone https://github.com/ArtoriasCode/jwtgo.git
 
 # Move to the project root directory
 cd jwtgo
@@ -65,7 +65,7 @@ cd jwtgo
 ### SignUp endpoint
 - Request:
   ```
-  curl --location 'http://localhost/auth/signup' \
+  curl --location 'http://localhost/api/v1/auth/signup' \
   --header 'Content-Type: application/json' \
   --data-raw '{
     "email": "test@gmail.com",
@@ -87,7 +87,7 @@ cd jwtgo
 ### SignIn endpoint
 - Request:
   ```
-  curl --location 'http://localhost/auth/signin' \
+  curl --location 'http://localhost/api/v1/auth/signin' \
   --header 'Content-Type: application/json' \
   --data-raw '{
     "email": "test@gmail.com",
@@ -111,7 +111,7 @@ cd jwtgo
 ### SignOut endpoint
 - Request:
   ```
-  curl --location 'http://localhost/auth/signout' \
+  curl --location 'http://localhost/api/v1/auth/signout' \
   --header 'Content-Type: application/json' \
   -b 'access_token=access_token; refresh_token=refresh_token'
   ```
@@ -132,7 +132,7 @@ cd jwtgo
 ### Refresh endpoint
 - Request:
   ```
-  curl --location 'http://localhost/auth/refresh' \
+  curl --location 'http://localhost/api/v1/auth/refresh' \
   --header 'Content-Type: application/json' \
   -b 'access_token=access_token; refresh_token=refresh_token'
   ```

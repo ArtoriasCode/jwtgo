@@ -37,11 +37,13 @@ func NewAuthController(
 	}
 }
 
-func (ac *AuthController) Register(router *gin.Engine) {
-	router.POST("/auth/signup", middleware.Validator[dto.UserCredentialsDTO](ac.requestValidator), ac.SignUp())
-	router.POST("/auth/signin", middleware.Validator[dto.UserCredentialsDTO](ac.requestValidator), ac.SignIn())
-	router.POST("/auth/signout", ac.SignOut())
-	router.POST("/auth/refresh", ac.Refresh())
+func (ac *AuthController) Register(apiGroup *gin.RouterGroup) {
+	authV1Group := apiGroup.Group("/v1/auth")
+
+	authV1Group.POST("/signup", middleware.Validator[dto.UserCredentialsDTO](ac.requestValidator), ac.SignUp())
+	authV1Group.POST("/signin", middleware.Validator[dto.UserCredentialsDTO](ac.requestValidator), ac.SignIn())
+	authV1Group.POST("/signout", ac.SignOut())
+	authV1Group.POST("/refresh", ac.Refresh())
 }
 
 func (ac *AuthController) handleError(c *gin.Context, err error, defaultMessage string) {
