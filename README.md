@@ -12,7 +12,7 @@ The architecture of a web application consists of these layers:
 - Database
 
 The architecture of the microservice application consists of these layers:
-- Server
+- Controller
 - Service
 - Repository
 
