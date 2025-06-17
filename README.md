@@ -1,10 +1,10 @@
-# jwtgo
+# 🔥 jwtgo
 
 A Go (Golang) backend clean architecture project with API Gateway, Microservices, MongoDB and JWT Authentication.
 
 The project was created for educational purposes and is not ideal. It has its shortcomings, which are gradually being corrected.
 
-## Project architecture
+## 📘 Project architecture
 The architecture of a web application consists of these layers:
 - Reverse Proxy
 - API Gateway
@@ -20,7 +20,7 @@ The architecture of the microservice application consists of these layers:
 
 The API is accessed via Reverse Proxy, in our case it is Nginx. It handles all incoming requests and prevents access to microservices and API gateway directly.
 
-## Major packages used in project
+## 📚 Major packages used in project
 - **[Gin](https://pkg.go.dev/github.com/gin-gonic/gin)**: Gin is a HTTP web framework written in Go (Golang). It features a Martini-like API with much better performance -- up to 40 times faster. If you need smashing performance, get yourself some Gin. 
 - **[gRPC](https://pkg.go.dev/google.golang.org/grpc)**: The Go implementation of gRPC: A high performance, open source, general RPC framework that puts mobile and HTTP/2 first. For more information see the Go gRPC docs, or jump directly into the quick start. 
 - **[protobuf](https://pkg.go.dev/google.golang.org/protobuf)**: Go support for Google's protocol buffers.
@@ -31,13 +31,13 @@ The API is accessed via Reverse Proxy, in our case it is Nginx. It handles all i
 - **[Logrus](https://pkg.go.dev/github.com/sirupsen/logrus)**: Structured, pluggable logging for Go.
 - **[Validator](https://pkg.go.dev/github.com/go-playground/validator/v10)**: Go Struct and Field validation, including Cross Field, Cross Struct, Map, Slice and Array diving.
 
-## Request flow without JWT authentication middleware
+## 📝 Request flow without JWT authentication middleware
 ![Image](https://raw.githubusercontent.com/ArtoriasCode/jwtgo/refs/heads/main/assets/without-jwt.png)
 
-## Request flow with JWT authentication middleware
+## 📝 Request flow with JWT authentication middleware
 ![Image](https://raw.githubusercontent.com/ArtoriasCode/jwtgo/refs/heads/main/assets/with-jwt.png)
 
-## How to run the project?
+## 🔨 How to run the project?
 First, download it and navigate to the root directory:
 ```bash
 # Move to your workspace
@@ -61,7 +61,7 @@ cd jwtgo
   ```
 - Access API using http://localhost.
 
-## Examples of API requests and responses
+## 🌐 Examples of API requests and responses
 ### SignUp endpoint
 - Request:
   ```
@@ -150,7 +150,7 @@ cd jwtgo
   }
   ```
 
-## Complete project folder structure
+## 📂 Complete project folder structure
 ```
 ├── build
 │   └── package
