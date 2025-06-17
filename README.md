@@ -34,8 +34,12 @@ The API is accessed via Reverse Proxy, in our case it is Nginx. It handles all i
 ## 📝 Request flow without JWT authentication middleware
 ![Image](https://raw.githubusercontent.com/ArtoriasCode/jwtgo/refs/heads/main/assets/without-jwt.png)
 
+Without an authentication mechanism, any user can access any API endpoint.
+
 ## 📝 Request flow with JWT authentication middleware
 ![Image](https://raw.githubusercontent.com/ArtoriasCode/jwtgo/refs/heads/main/assets/with-jwt.png)
+
+With an authentication mechanism you can restrict some API endpoints to users / specific roles etc.
 
 ## 🔨 How to run the project?
 First, download it and navigate to the root directory:
