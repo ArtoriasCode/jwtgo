@@ -7,8 +7,8 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	"jwtgo/internal/app/auth/controller/grpc/mapper"
 	serviceInterface "jwtgo/internal/app/auth/interface/service"
-	"jwtgo/internal/app/auth/server/grpc/mapper"
 	customErr "jwtgo/internal/pkg/error"
 	authPb "jwtgo/internal/pkg/proto/auth"
 	"jwtgo/pkg/logging"

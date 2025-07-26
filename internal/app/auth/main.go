@@ -2,16 +2,16 @@ package auth
 
 import (
 	"google.golang.org/grpc/credentials/insecure"
-	service3 "jwtgo/internal/pkg/interface/service"
 	"net"
 
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
 
 	"jwtgo/internal/app/auth/config"
-	service2 "jwtgo/internal/app/auth/interface/service"
-	server "jwtgo/internal/app/auth/server/grpc/v1"
+	server "jwtgo/internal/app/auth/controller/grpc/v1"
+	authServiceInterface "jwtgo/internal/app/auth/interface/service"
 	"jwtgo/internal/app/auth/service"
+	serviceInterface "jwtgo/internal/pkg/interface/service"
 	authPb "jwtgo/internal/pkg/proto/auth"
 	userPb "jwtgo/internal/pkg/proto/user"
 	servicePkg "jwtgo/internal/pkg/service"
@@ -22,9 +22,9 @@ type AuthMicroService struct {
 	Config            *config.Config
 	Logger            *logging.Logger
 	Router            *gin.Engine
-	JWTService        service3.JWTService
-	PasswordService   service3.PasswordService
-	AuthService       service2.AuthService
+	JWTService        serviceInterface.JWTService
+	PasswordService   serviceInterface.PasswordService
+	AuthService       authServiceInterface.AuthService
 	UserServiceClient userPb.UserServiceClient
 }
 

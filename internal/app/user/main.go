@@ -11,8 +11,8 @@ import (
 
 	"jwtgo/internal/app/user/adapter/mongodb/repository"
 	"jwtgo/internal/app/user/config"
+	server "jwtgo/internal/app/user/controller/grpc/v1"
 	serviceInterface "jwtgo/internal/app/user/interface/service"
-	server "jwtgo/internal/app/user/server/grpc/v1"
 	"jwtgo/internal/app/user/service"
 	userPb "jwtgo/internal/pkg/proto/user"
 	"jwtgo/pkg/client"

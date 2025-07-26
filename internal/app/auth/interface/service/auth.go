@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	"jwtgo/internal/app/auth/server/grpc/dto"
+	"jwtgo/internal/app/auth/controller/grpc/dto"
 )
 
 type AuthService interface {

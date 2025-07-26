@@ -1,8 +1,8 @@
 package mapper
 
 import (
+	"jwtgo/internal/app/user/controller/grpc/dto"
 	"jwtgo/internal/app/user/entity"
-	"jwtgo/internal/app/user/server/grpc/dto"
 	userPb "jwtgo/internal/pkg/proto/user"
 )
 

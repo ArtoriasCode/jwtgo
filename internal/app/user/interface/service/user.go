@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	"jwtgo/internal/app/user/server/grpc/dto"
+	"jwtgo/internal/app/user/controller/grpc/dto"
 )
 
 type UserService interface {

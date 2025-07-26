@@ -3,9 +3,9 @@ package service
 import (
 	"context"
 
+	"jwtgo/internal/app/user/controller/grpc/dto"
+	"jwtgo/internal/app/user/controller/grpc/mapper"
 	repositoryInterface "jwtgo/internal/app/user/interface/repository"
-	"jwtgo/internal/app/user/server/grpc/dto"
-	"jwtgo/internal/app/user/server/grpc/mapper"
 	customErr "jwtgo/internal/pkg/error"
 	"jwtgo/pkg/logging"
 )

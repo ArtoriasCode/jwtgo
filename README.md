@@ -195,7 +195,7 @@ cd jwtgo
 │   │   │   ├── interface
 │   │   │   │   └── service
 │   │   │   │       └── auth.go
-│   │   │   ├── server
+│   │   │   ├── controller
 │   │   │   │   └── grpc
 │   │   │   │       ├── dto
 │   │   │   │       │   └── user.go
@@ -224,7 +224,7 @@ cd jwtgo
 │   │       │   │   └── user.go
 │   │       │   └── service
 │   │       │       └── user.go
-│   │       ├── server
+│   │       ├── controller
 │   │       │   └── grpc
 │   │       │       ├── dto
 │   │       │       │   └── user.go
