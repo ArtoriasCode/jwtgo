@@ -5,7 +5,7 @@ import (
 
 	"jwtgo/internal/app/auth/controller/grpc/dto"
 	"jwtgo/internal/app/auth/controller/grpc/mapper"
-	customErr "jwtgo/internal/pkg/error"
+	customErr "jwtgo/internal/pkg/error/type"
 	serviceInterface "jwtgo/internal/pkg/interface/service"
 	userPb "jwtgo/internal/pkg/proto/user"
 	"jwtgo/pkg/logging"
@@ -32,13 +32,13 @@ func NewAuthService(
 	}
 }
 
-func (s *AuthService) SignUp(ctx context.Context, userCredentialsDTO *dto.UserCredentialsDTO) (bool, error) {
+func (s *AuthService) SignUp(ctx context.Context, userCredentialsDTO *dto.UserCredentialsDTO) (bool, customErr.BaseErrorInterface) {
 	getByEmailRequest := mapper.MapEmailToUserGetByEmailRequest(userCredentialsDTO.Email)
 
 	getByEmailResponse, err := s.userMicroService.GetByEmail(ctx, getByEmailRequest)
 	if err != nil {
-		s.logger.Error("Error while getting user: ", err)
-		return false, customErr.NewInternalServerError("Failed to check user email")
+		s.logger.Error("[AuthService -> SignUp -> GetByEmail]: ", err)
+		return false, customErr.NewInternalServerError("Failed to create user")
 	}
 
 	if getByEmailResponse.User != nil {
@@ -47,14 +47,14 @@ func (s *AuthService) SignUp(ctx context.Context, userCredentialsDTO *dto.UserCr
 
 	localSalt, err := s.passwordService.GenerateSalt(32)
 	if err != nil {
-		s.logger.Error("Error while generating local salt: ", err)
-		return false, customErr.NewInternalServerError("Failed to create a user")
+		s.logger.Error("[AuthService -> SignUp -> GenerateSalt]: ", err)
+		return false, customErr.NewInternalServerError("Failed to create user")
 	}
 
 	hashedPassword, err := s.passwordService.HashPassword(userCredentialsDTO.Password, localSalt)
 	if err != nil {
-		s.logger.Error("Error while hashing password: ", err)
-		return false, customErr.NewInternalServerError("Failed to create a user")
+		s.logger.Error("[AuthService -> SignUp -> HashPassword]: ", err)
+		return false, customErr.NewInternalServerError("Failed to create user")
 	}
 
 	userCredentialsDTO.Password = hashedPassword
@@ -64,20 +64,20 @@ func (s *AuthService) SignUp(ctx context.Context, userCredentialsDTO *dto.UserCr
 
 	_, err = s.userMicroService.Create(ctx, createRequest)
 	if err != nil {
-		s.logger.Error("Error while creating user: ", err)
-		return false, customErr.NewInternalServerError("Failed to create a user")
+		s.logger.Error("[AuthService -> SignUp -> Create]: ", err)
+		return false, customErr.NewInternalServerError("Failed to create user")
 	}
 
 	return true, nil
 }
 
-func (s *AuthService) SignIn(ctx context.Context, userCredentialsDTO *dto.UserCredentialsDTO) (*dto.UserTokensDTO, error) {
+func (s *AuthService) SignIn(ctx context.Context, userCredentialsDTO *dto.UserCredentialsDTO) (*dto.UserTokensDTO, customErr.BaseErrorInterface) {
 	getByEmailRequest := mapper.MapEmailToUserGetByEmailRequest(userCredentialsDTO.Email)
 
 	getByEmailResponse, err := s.userMicroService.GetByEmail(ctx, getByEmailRequest)
 	if err != nil {
-		s.logger.Error("Error while getting user: ", err)
-		return nil, customErr.NewInternalServerError("Failed to check user email")
+		s.logger.Error("[AuthService -> SignIn -> GetByEmail]: ", err)
+		return nil, customErr.NewInternalServerError("Failed to sign in user")
 	}
 
 	if getByEmailResponse.User == nil {
@@ -91,8 +91,8 @@ func (s *AuthService) SignIn(ctx context.Context, userCredentialsDTO *dto.UserCr
 
 	accessToken, refreshToken, err := s.jwtService.GenerateTokens(getByEmailResponse.User.Id)
 	if err != nil {
-		s.logger.Error("Error while generating tokens: ", err)
-		return nil, customErr.NewInternalServerError("Token generation error")
+		s.logger.Error("[AuthService -> SignIn -> GenerateTokens]: ", err)
+		return nil, customErr.NewInternalServerError("Failed to sign in user")
 	}
 
 	getByEmailResponse.User.RefreshToken = refreshToken
@@ -100,14 +100,14 @@ func (s *AuthService) SignIn(ctx context.Context, userCredentialsDTO *dto.UserCr
 
 	_, err = s.userMicroService.Update(ctx, updateRequest)
 	if err != nil {
-		s.logger.Error("Error while updating user: ", err)
-		return nil, customErr.NewInternalServerError("Token updating error")
+		s.logger.Error("[AuthService -> SignIn -> Update]: ", err)
+		return nil, customErr.NewInternalServerError("Failed to sign in user")
 	}
 
 	return mapper.MapTokensToUserTokensDTO(accessToken, refreshToken), nil
 }
 
-func (s *AuthService) SignOut(ctx context.Context, refreshTokenDTO *dto.UserTokenDTO) (bool, error) {
+func (s *AuthService) SignOut(ctx context.Context, refreshTokenDTO *dto.UserTokenDTO) (bool, customErr.BaseErrorInterface) {
 	claims, err := s.jwtService.ValidateToken(refreshTokenDTO.Token)
 	if err != nil {
 		return false, err
@@ -117,8 +117,8 @@ func (s *AuthService) SignOut(ctx context.Context, refreshTokenDTO *dto.UserToke
 
 	getByIdResponse, err := s.userMicroService.GetById(ctx, getByIdRequest)
 	if err != nil {
-		s.logger.Error("Error while getting user: ", err)
-		return false, customErr.NewInternalServerError("Failed to check user id")
+		s.logger.Error("[AuthService -> SignOut -> GetById]: ", err)
+		return false, customErr.NewInternalServerError("Failed to sign out user")
 	}
 
 	if getByIdResponse == nil {
@@ -132,14 +132,14 @@ func (s *AuthService) SignOut(ctx context.Context, refreshTokenDTO *dto.UserToke
 
 	_, err = s.userMicroService.Update(ctx, updateRequest)
 	if err != nil {
-		s.logger.Error("Error while updating user: ", err)
-		return false, customErr.NewInternalServerError("User updating error")
+		s.logger.Error("[AuthService -> SignOut -> Update]: ", err)
+		return false, customErr.NewInternalServerError("Failed to sign out user")
 	}
 
 	return true, nil
 }
 
-func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserTokenDTO) (*dto.UserTokensDTO, error) {
+func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserTokenDTO) (*dto.UserTokensDTO, customErr.BaseErrorInterface) {
 	claims, err := s.jwtService.ValidateToken(refreshTokenDTO.Token)
 	if err != nil {
 		return nil, err
@@ -149,8 +149,8 @@ func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserToke
 
 	getByIdResponse, err := s.userMicroService.GetById(ctx, getByIdRequest)
 	if err != nil {
-		s.logger.Error("Error while getting user: ", err)
-		return nil, customErr.NewInternalServerError("Failed to check user id")
+		s.logger.Error("[AuthService -> Refresh -> GetById]: ", err)
+		return nil, customErr.NewInternalServerError("Failed to refresh tokens")
 	}
 
 	if getByIdResponse == nil {
@@ -163,8 +163,8 @@ func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserToke
 
 	accessToken, refreshToken, err := s.jwtService.GenerateTokens(getByIdResponse.User.Id)
 	if err != nil {
-		s.logger.Error("Error while generating tokens: ", err)
-		return nil, customErr.NewInternalServerError("Token generation error")
+		s.logger.Error("[AuthService -> Refresh -> GenerateTokens]: ", err)
+		return nil, customErr.NewInternalServerError("Failed to refresh tokens")
 	}
 
 	getByIdResponse.User.RefreshToken = refreshToken
@@ -174,8 +174,8 @@ func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserToke
 
 	_, err = s.userMicroService.Update(ctx, updateRequest)
 	if err != nil {
-		s.logger.Error("Error while updating user: ", err)
-		return nil, customErr.NewInternalServerError("Token updating error")
+		s.logger.Error("[AuthService -> Refresh -> Update]: ", err)
+		return nil, customErr.NewInternalServerError("Failed to refresh tokens")
 	}
 
 	return mapper.MapTokensToUserTokensDTO(accessToken, refreshToken), nil

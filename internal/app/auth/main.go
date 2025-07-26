@@ -1,16 +1,17 @@
 package auth
 
 import (
-	"google.golang.org/grpc/credentials/insecure"
 	"net"
 
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	"jwtgo/internal/app/auth/config"
 	server "jwtgo/internal/app/auth/controller/grpc/v1"
 	authServiceInterface "jwtgo/internal/app/auth/interface/service"
-	"jwtgo/internal/app/auth/service"
+	authService "jwtgo/internal/app/auth/service"
+	errorService "jwtgo/internal/pkg/error"
 	serviceInterface "jwtgo/internal/pkg/interface/service"
 	authPb "jwtgo/internal/pkg/proto/auth"
 	userPb "jwtgo/internal/pkg/proto/user"
@@ -25,6 +26,7 @@ type AuthMicroService struct {
 	JWTService        serviceInterface.JWTService
 	PasswordService   serviceInterface.PasswordService
 	AuthService       authServiceInterface.AuthService
+	ErrorService      serviceInterface.ErrorService
 	UserServiceClient userPb.UserServiceClient
 }
 
@@ -66,7 +68,8 @@ func (app *AuthMicroService) InitializePasswordService() {
 }
 
 func (app *AuthMicroService) InitializeAuthService() {
-	app.AuthService = service.NewAuthService(app.UserServiceClient, app.JWTService, app.PasswordService, app.Logger)
+	app.AuthService = authService.NewAuthService(app.UserServiceClient, app.JWTService, app.PasswordService, app.Logger)
+	app.ErrorService = errorService.NewErrorService()
 }
 
 func (app *AuthMicroService) InitializeServices() {
@@ -83,7 +86,7 @@ func (app *AuthMicroService) Initialize() {
 
 func (app *AuthMicroService) Run() {
 	grpcServer := grpc.NewServer()
-	authPb.RegisterAuthServiceServer(grpcServer, server.NewAuthServer(app.AuthService, app.Logger))
+	authPb.RegisterAuthServiceServer(grpcServer, server.NewAuthServer(app.AuthService, app.ErrorService, app.Logger))
 
 	listener, err := net.Listen("tcp", ":"+app.Config.App.Port)
 	if err != nil {

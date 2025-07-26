@@ -2,11 +2,12 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"jwtgo/internal/app/user/controller/grpc/dto"
 	"jwtgo/internal/app/user/controller/grpc/mapper"
 	repositoryInterface "jwtgo/internal/app/user/interface/repository"
-	customErr "jwtgo/internal/pkg/error"
+	customErr "jwtgo/internal/pkg/error/type"
 	"jwtgo/pkg/logging"
 )
 
@@ -25,63 +26,58 @@ func NewUserService(
 	}
 }
 
-func (s *UserService) GetById(ctx context.Context, userIdDTO *dto.UserIdDTO) (*dto.UserDTO, error) {
+func (s *UserService) GetById(ctx context.Context, userIdDTO *dto.UserIdDTO) (*dto.UserDTO, customErr.BaseErrorInterface) {
 	userEntity, err := s.userRepository.GetById(ctx, userIdDTO.Id)
 	if err != nil {
-		s.logger.Error("Error while getting user: ", err)
-		return nil, customErr.NewInternalServerError("Failed to check user id")
-	}
-
-	if userEntity == nil {
-		return nil, nil
+		var notFoundErr *customErr.NotFoundError
+		if errors.As(err, &notFoundErr) {
+			return nil, nil
+		}
+		return nil, err
 	}
 
 	return mapper.MapUserEntityToUserDTO(userEntity), nil
 }
 
-func (s *UserService) GetByEmail(ctx context.Context, userEmailDTO *dto.UserEmailDTO) (*dto.UserDTO, error) {
+func (s *UserService) GetByEmail(ctx context.Context, userEmailDTO *dto.UserEmailDTO) (*dto.UserDTO, customErr.BaseErrorInterface) {
 	userEntity, err := s.userRepository.GetByEmail(ctx, userEmailDTO.Email)
 	if err != nil {
-		s.logger.Error("Error while getting user: ", err)
-		return nil, customErr.NewInternalServerError("Failed to check user email")
-	}
-
-	if userEntity == nil {
-		return nil, nil
+		var notFoundErr *customErr.NotFoundError
+		if errors.As(err, &notFoundErr) {
+			return nil, nil
+		}
+		return nil, err
 	}
 
 	return mapper.MapUserEntityToUserDTO(userEntity), nil
 }
 
-func (s *UserService) Create(ctx context.Context, userCreateDTO *dto.UserCreateDTO) (*dto.UserDTO, error) {
+func (s *UserService) Create(ctx context.Context, userCreateDTO *dto.UserCreateDTO) (*dto.UserDTO, customErr.BaseErrorInterface) {
 	userEntity := mapper.MapUserCreateDTOToUserEntity(userCreateDTO)
 
 	createdUserEntity, err := s.userRepository.Create(ctx, userEntity)
 	if err != nil {
-		s.logger.Error("Error while creating user: ", err)
-		return nil, customErr.NewInternalServerError("Failed to create a user")
+		return nil, err
 	}
 
 	return mapper.MapUserEntityToUserDTO(createdUserEntity), nil
 }
 
-func (s *UserService) Update(ctx context.Context, userUpdateDTO *dto.UserUpdateDTO) (*dto.UserDTO, error) {
+func (s *UserService) Update(ctx context.Context, userUpdateDTO *dto.UserUpdateDTO) (*dto.UserDTO, customErr.BaseErrorInterface) {
 	userEntity := mapper.MapUserUpdateDTOToUserEntity(userUpdateDTO)
 
 	updatedUserEntity, err := s.userRepository.Update(ctx, userEntity.Id, userEntity)
 	if err != nil {
-		s.logger.Error("Error while updating user: ", err)
-		return nil, customErr.NewInternalServerError("Failed to update a user")
+		return nil, err
 	}
 
 	return mapper.MapUserEntityToUserDTO(updatedUserEntity), nil
 }
 
-func (s *UserService) Delete(ctx context.Context, userDeleteDTO *dto.UserIdDTO) (bool, error) {
+func (s *UserService) Delete(ctx context.Context, userDeleteDTO *dto.UserIdDTO) (bool, customErr.BaseErrorInterface) {
 	isUserDeleted, err := s.userRepository.Delete(ctx, userDeleteDTO.Id)
 	if err != nil {
-		s.logger.Error("Error while deleting user: ", err)
-		return false, customErr.NewInternalServerError("Failed to delete a user")
+		return false, err
 	}
 
 	return isUserDeleted, nil

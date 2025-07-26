@@ -9,6 +9,7 @@ import (
 	"jwtgo/internal/app/api/config"
 	"jwtgo/internal/app/api/controller/http/middleware"
 	"jwtgo/internal/app/api/controller/http/v1"
+	errorService "jwtgo/internal/pkg/error"
 	serviceInterface "jwtgo/internal/pkg/interface/service"
 	authPb "jwtgo/internal/pkg/proto/auth"
 	servicePkg "jwtgo/internal/pkg/service"
@@ -20,6 +21,7 @@ type ApiGateway struct {
 	Logger            *logging.Logger
 	Router            *gin.Engine
 	JWTService        serviceInterface.JWTService
+	ErrorService      serviceInterface.ErrorService
 	ValidatorClient   *validator.Validate
 	AuthServiceClient authPb.AuthServiceClient
 }
@@ -65,6 +67,7 @@ func (app *ApiGateway) InitializeJWTService() {
 
 func (app *ApiGateway) InitializeServices() {
 	app.InitializeJWTService()
+	app.ErrorService = errorService.NewErrorService()
 }
 
 func (app *ApiGateway) SetGinMode() {
@@ -85,7 +88,7 @@ func (app *ApiGateway) InitializeRouter() {
 func (app *ApiGateway) InitializeControllers() {
 	apiGroup := app.Router.Group("/api")
 
-	authController := v1.NewAuthController(app.AuthServiceClient, app.ValidatorClient, app.Logger)
+	authController := v1.NewAuthController(app.AuthServiceClient, app.ErrorService, app.ValidatorClient, app.Logger)
 	authController.Register(apiGroup)
 
 	app.Router.Use(middleware.Authentication(app.JWTService, app.AuthServiceClient))

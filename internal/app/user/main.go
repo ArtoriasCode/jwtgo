@@ -2,6 +2,7 @@ package user
 
 import (
 	"fmt"
+	serviceInterface "jwtgo/internal/pkg/interface/service"
 	"net"
 
 	"github.com/gin-gonic/gin"
@@ -12,20 +13,22 @@ import (
 	"jwtgo/internal/app/user/adapter/mongodb/repository"
 	"jwtgo/internal/app/user/config"
 	server "jwtgo/internal/app/user/controller/grpc/v1"
-	serviceInterface "jwtgo/internal/app/user/interface/service"
-	"jwtgo/internal/app/user/service"
+	userServiceInterface "jwtgo/internal/app/user/interface/service"
+	userService "jwtgo/internal/app/user/service"
+	errorService "jwtgo/internal/pkg/error"
 	userPb "jwtgo/internal/pkg/proto/user"
 	"jwtgo/pkg/client"
 	"jwtgo/pkg/logging"
 )
 
 type UserMicroService struct {
-	Config      *config.Config
-	Logger      *logging.Logger
-	Router      *gin.Engine
-	Validator   *validator.Validate
-	MongoClient *mongo.Client
-	UserService serviceInterface.UserService
+	Config       *config.Config
+	Logger       *logging.Logger
+	Router       *gin.Engine
+	Validator    *validator.Validate
+	MongoClient  *mongo.Client
+	UserService  userServiceInterface.UserService
+	ErrorService serviceInterface.ErrorService
 }
 
 func NewUserMicroService() *UserMicroService {
@@ -59,7 +62,8 @@ func (app *UserMicroService) InitializeClients() {
 
 func (app *UserMicroService) InitializeUserService() {
 	userRepository := repository.NewUserRepository(app.MongoClient, app.Config.MongoDB.Database, "users", app.Logger)
-	app.UserService = service.NewUserService(userRepository, app.Logger)
+	app.UserService = userService.NewUserService(userRepository, app.Logger)
+	app.ErrorService = errorService.NewErrorService()
 }
 
 func (app *UserMicroService) InitializeServices() {
@@ -74,7 +78,7 @@ func (app *UserMicroService) Initialize() {
 
 func (app *UserMicroService) Run() {
 	grpcServer := grpc.NewServer()
-	userPb.RegisterUserServiceServer(grpcServer, server.NewUserServer(app.UserService, app.Logger))
+	userPb.RegisterUserServiceServer(grpcServer, server.NewUserServer(app.UserService, app.ErrorService, app.Logger))
 
 	listener, err := net.Listen("tcp", ":"+app.Config.App.Port)
 	if err != nil {

@@ -2,50 +2,32 @@ package v1
 
 import (
 	"context"
-	"errors"
-
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"jwtgo/internal/app/user/controller/grpc/mapper"
-	serviceInterface "jwtgo/internal/app/user/interface/service"
-	customErr "jwtgo/internal/pkg/error"
+	userServiceInterface "jwtgo/internal/app/user/interface/service"
+	serviceInterface "jwtgo/internal/pkg/interface/service"
 	userPb "jwtgo/internal/pkg/proto/user"
 	"jwtgo/pkg/logging"
 )
 
 type UserServer struct {
 	userPb.UnimplementedUserServiceServer
-	userService serviceInterface.UserService
-	logger      *logging.Logger
+	userService  userServiceInterface.UserService
+	errorService serviceInterface.ErrorService
+	logger       *logging.Logger
 }
 
-func NewUserServer(userService serviceInterface.UserService, logger *logging.Logger) *UserServer {
+func NewUserServer(
+	userService userServiceInterface.UserService,
+	errorService serviceInterface.ErrorService,
+	logger *logging.Logger,
+) *UserServer {
 	return &UserServer{
-		userService: userService,
-		logger:      logger,
+		userService:  userService,
+		errorService: errorService,
+		logger:       logger,
 	}
-}
-
-func (s *UserServer) handeError(err error) codes.Code {
-	var alreadyExistsErr *customErr.AlreadyExistsError
-	var invalidCredentialsErr *customErr.InvalidCredentialsError
-	var notFoundError *customErr.NotFoundError
-
-	var statusCode codes.Code
-
-	switch {
-	case errors.As(err, &alreadyExistsErr):
-		statusCode = codes.AlreadyExists
-	case errors.As(err, &invalidCredentialsErr):
-		statusCode = codes.Unauthenticated
-	case errors.As(err, &notFoundError):
-		statusCode = codes.NotFound
-	default:
-		statusCode = codes.Internal
-	}
-
-	return statusCode
 }
 
 func (s *UserServer) GetById(ctx context.Context, request *userPb.GetByIdRequest) (*userPb.GetByIdResponse, error) {
@@ -53,7 +35,7 @@ func (s *UserServer) GetById(ctx context.Context, request *userPb.GetByIdRequest
 
 	userDTO, err := s.userService.GetById(ctx, userIdDTO)
 	if err != nil {
-		return &userPb.GetByIdResponse{}, status.Errorf(s.handeError(err), err.Error())
+		return &userPb.GetByIdResponse{}, status.Errorf(s.errorService.ErrToGrpcCode(err), err.Error())
 	}
 
 	if userDTO == nil {
@@ -68,7 +50,7 @@ func (s *UserServer) GetByEmail(ctx context.Context, request *userPb.GetByEmailR
 
 	userDTO, err := s.userService.GetByEmail(ctx, userEmailDTO)
 	if err != nil {
-		return &userPb.GetByEmailResponse{}, status.Errorf(s.handeError(err), err.Error())
+		return &userPb.GetByEmailResponse{}, status.Errorf(s.errorService.ErrToGrpcCode(err), err.Error())
 	}
 
 	if userDTO == nil {
@@ -83,7 +65,7 @@ func (s *UserServer) Create(ctx context.Context, request *userPb.CreateRequest) 
 
 	userDTO, err := s.userService.Create(ctx, userCreateDTO)
 	if err != nil {
-		return &userPb.CreateResponse{}, status.Errorf(s.handeError(err), err.Error())
+		return &userPb.CreateResponse{}, status.Errorf(s.errorService.ErrToGrpcCode(err), err.Error())
 	}
 
 	return mapper.MapUserDTOToUserCreateResponse(userDTO), nil
@@ -94,7 +76,7 @@ func (s *UserServer) Update(ctx context.Context, request *userPb.UpdateRequest) 
 
 	userDTO, err := s.userService.Update(ctx, userUpdateDTO)
 	if err != nil {
-		return &userPb.UpdateResponse{}, status.Errorf(s.handeError(err), err.Error())
+		return &userPb.UpdateResponse{}, status.Errorf(s.errorService.ErrToGrpcCode(err), err.Error())
 	}
 
 	return mapper.MapUserDTOToUserUpdateResponse(userDTO), nil
@@ -105,7 +87,7 @@ func (s *UserServer) Delete(ctx context.Context, request *userPb.DeleteRequest) 
 
 	isDeleted, err := s.userService.Delete(ctx, userIdDTO)
 	if err != nil {
-		return &userPb.DeleteResponse{}, status.Errorf(s.handeError(err), err.Error())
+		return &userPb.DeleteResponse{}, status.Errorf(s.errorService.ErrToGrpcCode(err), err.Error())
 	}
 
 	return mapper.MapStatusToDeleteResponse(isDeleted), nil

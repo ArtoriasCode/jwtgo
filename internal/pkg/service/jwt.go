@@ -6,7 +6,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 
-	customErr "jwtgo/internal/pkg/error"
+	customErr "jwtgo/internal/pkg/error/type"
 	"jwtgo/internal/pkg/service/schema"
 )
 
@@ -24,7 +24,7 @@ func NewJWTService(secretKey string, accessLifetime, refreshLifetime int) *JWTSe
 	}
 }
 
-func (s *JWTService) GenerateTokens(id string) (string, string, error) {
+func (s *JWTService) GenerateTokens(id string) (string, string, customErr.BaseErrorInterface) {
 	accessClaims := &schema.Claims{
 		Id: id,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -41,18 +41,18 @@ func (s *JWTService) GenerateTokens(id string) (string, string, error) {
 
 	accessToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims).SignedString([]byte(s.secretKey))
 	if err != nil {
-		return "", "", err
+		return "", "", customErr.NewInternalServerError("Failed to generate access token")
 	}
 
 	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString([]byte(s.secretKey))
 	if err != nil {
-		return "", "", err
+		return "", "", customErr.NewInternalServerError("Failed to generate refresh token")
 	}
 
 	return accessToken, refreshToken, nil
 }
 
-func (s *JWTService) ValidateToken(signedToken string) (*schema.Claims, error) {
+func (s *JWTService) ValidateToken(signedToken string) (*schema.Claims, customErr.BaseErrorInterface) {
 	token, err := jwt.ParseWithClaims(
 		signedToken,
 		&schema.Claims{},

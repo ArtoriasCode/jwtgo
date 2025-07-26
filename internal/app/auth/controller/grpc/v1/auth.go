@@ -2,52 +2,33 @@ package v1
 
 import (
 	"context"
-	"errors"
+	serviceInterface "jwtgo/internal/pkg/interface/service"
 
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"jwtgo/internal/app/auth/controller/grpc/mapper"
-	serviceInterface "jwtgo/internal/app/auth/interface/service"
-	customErr "jwtgo/internal/pkg/error"
+	authServiceInterface "jwtgo/internal/app/auth/interface/service"
 	authPb "jwtgo/internal/pkg/proto/auth"
 	"jwtgo/pkg/logging"
 )
 
 type AuthServer struct {
 	authPb.UnimplementedAuthServiceServer
-	authService serviceInterface.AuthService
-	logger      *logging.Logger
+	authService  authServiceInterface.AuthService
+	errorService serviceInterface.ErrorService
+	logger       *logging.Logger
 }
 
-func NewAuthServer(authService serviceInterface.AuthService, logger *logging.Logger) *AuthServer {
+func NewAuthServer(
+	authService authServiceInterface.AuthService,
+	errorService serviceInterface.ErrorService,
+	logger *logging.Logger,
+) *AuthServer {
 	return &AuthServer{
-		authService: authService,
-		logger:      logger,
+		authService:  authService,
+		errorService: errorService,
+		logger:       logger,
 	}
-}
-
-func (s *AuthServer) handeError(err error) codes.Code {
-	var alreadyExistsErr *customErr.AlreadyExistsError
-	var invalidCredentialsErr *customErr.InvalidCredentialsError
-	var invalidTokenError *customErr.InvalidTokenError
-	var expiredTokenError *customErr.ExpiredTokenError
-	var notFoundError *customErr.NotFoundError
-
-	var statusCode codes.Code
-
-	switch {
-	case errors.As(err, &alreadyExistsErr):
-		statusCode = codes.AlreadyExists
-	case errors.As(err, &invalidCredentialsErr), errors.As(err, &invalidTokenError), errors.As(err, &expiredTokenError):
-		statusCode = codes.Unauthenticated
-	case errors.As(err, &notFoundError):
-		statusCode = codes.NotFound
-	default:
-		statusCode = codes.Internal
-	}
-
-	return statusCode
 }
 
 func (s *AuthServer) SignUp(ctx context.Context, request *authPb.SignUpRequest) (*authPb.SignUpResponse, error) {
@@ -55,7 +36,7 @@ func (s *AuthServer) SignUp(ctx context.Context, request *authPb.SignUpRequest) 
 
 	_, err := s.authService.SignUp(ctx, userCredentialsDTO)
 	if err != nil {
-		return &authPb.SignUpResponse{}, status.Errorf(s.handeError(err), err.Error())
+		return &authPb.SignUpResponse{}, status.Errorf(s.errorService.ErrToGrpcCode(err), err.Error())
 	}
 
 	return &authPb.SignUpResponse{Message: "User successfully registered"}, nil
@@ -66,7 +47,7 @@ func (s *AuthServer) SignIn(ctx context.Context, request *authPb.SignInRequest) 
 
 	userTokensDTO, err := s.authService.SignIn(ctx, userCredentialsDTO)
 	if err != nil {
-		return &authPb.SignInResponse{}, status.Errorf(s.handeError(err), err.Error())
+		return &authPb.SignInResponse{}, status.Errorf(s.errorService.ErrToGrpcCode(err), err.Error())
 	}
 
 	return mapper.MapUserTokensDTOToAuthSignInResponse(userTokensDTO, "User successfully logged in"), nil
@@ -77,7 +58,7 @@ func (s *AuthServer) SignOut(ctx context.Context, request *authPb.SignOutRequest
 
 	_, err := s.authService.SignOut(ctx, userAccessTokenDTO)
 	if err != nil {
-		return &authPb.SignOutResponse{}, status.Errorf(s.handeError(err), err.Error())
+		return &authPb.SignOutResponse{}, status.Errorf(s.errorService.ErrToGrpcCode(err), err.Error())
 	}
 
 	return &authPb.SignOutResponse{Message: "User successfully logged out"}, nil
@@ -88,7 +69,7 @@ func (s *AuthServer) Refresh(ctx context.Context, request *authPb.RefreshRequest
 
 	userTokensDTO, err := s.authService.Refresh(ctx, userRefreshTokenDTO)
 	if err != nil {
-		return &authPb.RefreshResponse{}, status.Errorf(s.handeError(err), err.Error())
+		return &authPb.RefreshResponse{}, status.Errorf(s.errorService.ErrToGrpcCode(err), err.Error())
 	}
 
 	return mapper.MapUserTokensDTOToAuthRefreshResponse(userTokensDTO, "Tokens successfully updated"), nil

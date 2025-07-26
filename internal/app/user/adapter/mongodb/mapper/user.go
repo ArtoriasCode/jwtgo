@@ -6,7 +6,7 @@ import (
 
 	mongoEntity "jwtgo/internal/app/user/adapter/mongodb/entity"
 	domainEntity "jwtgo/internal/app/user/entity"
-	customErr "jwtgo/internal/pkg/error"
+	customErr "jwtgo/internal/pkg/error/type"
 )
 
 func MapMongoUserToDomainUser(mongoUser *mongoEntity.User) *domainEntity.User {
