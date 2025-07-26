@@ -192,9 +192,6 @@ cd jwtgo
 │   │   ├── auth
 │   │   │   ├── config
 │   │   │   │   └── config.go
-│   │   │   ├── interface
-│   │   │   │   └── service
-│   │   │   │       └── auth.go
 │   │   │   ├── controller
 │   │   │   │   └── grpc
 │   │   │   │       ├── dto
@@ -203,8 +200,13 @@ cd jwtgo
 │   │   │   │       │   └── user.go
 │   │   │   │       └── v1
 │   │   │   │           └── auth.go
+│   │   │   ├── interface
+│   │   │   │   └── service
+│   │   │   │       ├── auth.go
+│   │   │   │       └── password.go
 │   │   │   ├── service
-│   │   │   │   └── auth.go
+│   │   │   │   ├── auth.go
+│   │   │   │   └── password.go
 │   │   │   └── main.go
 │   │   └── user
 │   │       ├── adapter
@@ -217,13 +219,6 @@ cd jwtgo
 │   │       │           └── user.go
 │   │       ├── config
 │   │       │   └── config.go
-│   │       ├── entity
-│   │       │   └── user.go
-│   │       ├── interface
-│   │       │   ├── repository
-│   │       │   │   └── user.go
-│   │       │   └── service
-│   │       │       └── user.go
 │   │       ├── controller
 │   │       │   └── grpc
 │   │       │       ├── dto
@@ -232,35 +227,44 @@ cd jwtgo
 │   │       │       │   └── user.go
 │   │       │       └── v1
 │   │       │           └── user.go
+│   │       ├── entity
+│   │       │   └── user.go
+│   │       ├── interface
+│   │       │   ├── repository
+│   │       │   │   └── user.go
+│   │       │   └── service
+│   │       │       └── user.go
 │   │       ├── service
 │   │       │   └── user.go
 │   │       └── main.go
 │   └── pkg
 │       ├── error
-│       │   ├── auth.go
-│       │   ├── jwt.go
-│       │   ├── repository.go
-│       │   └── server.go
+│       │   ├── service.go
+│       │   └── type
+│       │       ├── auth.go
+│       │       ├── base.go
+│       │       ├── jwt.go
+│       │       ├── repository.go
+│       │       └── server.go
 │       ├── interface
 │       │   └── service
-│       │       ├── jwt.go
-│       │       └── password.go
+│       │       ├── error.go
+│       │       └── jwt.go
+│       ├── jwt
+│       │   ├── jwt.go
+│       │   └── schema
+│       │       └── schema.go
 │       ├── proto
 │       │   ├── auth
-│       │   │   ├── auth.pb.go
-│       │   │   └── auth_grpc.pb.go
+│       │   │   ├── auth_grpc.pb.go
+│       │   │   └── auth.pb.go
 │       │   └── user
-│       │       ├── user.pb.go
-│       │       └── user_grpc.pb.go
-│       ├── request
-│       │   ├── schema
-│       │   │   └── response.go
-│       │   └── response.go
-│       └── service
-│           ├── schema
-│           │   └── jwt.go
-│           ├── jwt.go
-│           └── password.go
+│       │       ├── user_grpc.pb.go
+│       │       └── user.pb.go
+│       └── request
+│           ├── response.go
+│           └── schema
+│               └── response.go
 ├── pkg
 │   ├── client
 │   │   └── mongodb.go
