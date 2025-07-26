@@ -5,22 +5,22 @@ import (
 	"google.golang.org/grpc/status"
 
 	"jwtgo/internal/app/user/controller/grpc/mapper"
-	userServiceInterface "jwtgo/internal/app/user/interface/service"
-	serviceInterface "jwtgo/internal/pkg/interface/service"
+	userServiceIface "jwtgo/internal/app/user/interface/service"
+	pkgServiceIface "jwtgo/internal/pkg/interface/service"
 	userPb "jwtgo/internal/pkg/proto/user"
 	"jwtgo/pkg/logging"
 )
 
 type UserServer struct {
 	userPb.UnimplementedUserServiceServer
-	userService  userServiceInterface.UserService
-	errorService serviceInterface.ErrorService
+	userService  userServiceIface.UserServiceIface
+	errorService pkgServiceIface.ErrorServiceIface
 	logger       *logging.Logger
 }
 
 func NewUserServer(
-	userService userServiceInterface.UserService,
-	errorService serviceInterface.ErrorService,
+	userService userServiceIface.UserServiceIface,
+	errorService pkgServiceIface.ErrorServiceIface,
 	logger *logging.Logger,
 ) *UserServer {
 	return &UserServer{

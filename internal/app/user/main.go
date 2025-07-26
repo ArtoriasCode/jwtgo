@@ -2,7 +2,6 @@ package user
 
 import (
 	"fmt"
-	serviceInterface "jwtgo/internal/pkg/interface/service"
 	"net"
 
 	"github.com/gin-gonic/gin"
@@ -13,9 +12,10 @@ import (
 	"jwtgo/internal/app/user/adapter/mongodb/repository"
 	"jwtgo/internal/app/user/config"
 	server "jwtgo/internal/app/user/controller/grpc/v1"
-	userServiceInterface "jwtgo/internal/app/user/interface/service"
+	userServiceIface "jwtgo/internal/app/user/interface/service"
 	userService "jwtgo/internal/app/user/service"
 	errorService "jwtgo/internal/pkg/error"
+	pkgServiceIface "jwtgo/internal/pkg/interface/service"
 	userPb "jwtgo/internal/pkg/proto/user"
 	"jwtgo/pkg/client"
 	"jwtgo/pkg/logging"
@@ -27,8 +27,8 @@ type UserMicroService struct {
 	Router       *gin.Engine
 	Validator    *validator.Validate
 	MongoClient  *mongo.Client
-	UserService  userServiceInterface.UserService
-	ErrorService serviceInterface.ErrorService
+	UserService  userServiceIface.UserServiceIface
+	ErrorService pkgServiceIface.ErrorServiceIface
 }
 
 func NewUserMicroService() *UserMicroService {
@@ -61,12 +61,21 @@ func (app *UserMicroService) InitializeClients() {
 }
 
 func (app *UserMicroService) InitializeUserService() {
-	userRepository := repository.NewUserRepository(app.MongoClient, app.Config.MongoDB.Database, "users", app.Logger)
+	userRepository := repository.NewUserRepository(
+		app.MongoClient,
+		app.Config.MongoDB.Database,
+		"users",
+		app.Logger,
+	)
 	app.UserService = userService.NewUserService(userRepository, app.Logger)
+}
+
+func (app *UserMicroService) InitializeErrorService() {
 	app.ErrorService = errorService.NewErrorService()
 }
 
 func (app *UserMicroService) InitializeServices() {
+	app.InitializeErrorService()
 	app.InitializeUserService()
 }
 

@@ -4,6 +4,6 @@ type InvalidCredentialsError struct {
 	BaseError
 }
 
-func NewInvalidCredentialsError(message string) BaseErrorInterface {
+func NewInvalidCredentialsError(message string) BaseErrorIface {
 	return &InvalidCredentialsError{BaseError{Message: message}}
 }

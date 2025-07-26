@@ -4,7 +4,7 @@ type InvalidTokenError struct {
 	BaseError
 }
 
-func NewInvalidTokenError(message string) BaseErrorInterface {
+func NewInvalidTokenError(message string) BaseErrorIface {
 	return &InvalidTokenError{BaseError{Message: message}}
 }
 
@@ -12,6 +12,6 @@ type ExpiredTokenError struct {
 	BaseError
 }
 
-func NewExpiredTokenError(message string) BaseErrorInterface {
+func NewExpiredTokenError(message string) BaseErrorIface {
 	return &ExpiredTokenError{BaseError{Message: message}}
 }

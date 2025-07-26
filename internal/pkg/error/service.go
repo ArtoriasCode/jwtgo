@@ -16,7 +16,7 @@ func NewErrorService() *ErrorService {
 	return &ErrorService{}
 }
 
-func (s *ErrorService) ErrToGrpcCode(err customErr.BaseErrorInterface) codes.Code {
+func (s *ErrorService) ErrToGrpcCode(err customErr.BaseErrorIface) codes.Code {
 	var (
 		alreadyExistsErr      *customErr.AlreadyExistsError
 		invalidCredentialsErr *customErr.InvalidCredentialsError

@@ -7,13 +7,13 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"jwtgo/internal/app/api/controller/http/mapper"
-	serviceInterface "jwtgo/internal/pkg/interface/service"
+	pkgServiceIface "jwtgo/internal/pkg/interface/service"
 	authPb "jwtgo/internal/pkg/proto/auth"
 	"jwtgo/internal/pkg/request"
 	"jwtgo/internal/pkg/request/schema"
 )
 
-func Authentication(jwtService serviceInterface.JWTService, authMicroService authPb.AuthServiceClient) gin.HandlerFunc {
+func Authentication(jwtService pkgServiceIface.JWTServiceIface, authMicroService authPb.AuthServiceClient) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		accessToken, err := c.Request.Cookie("access_token")
 		if err != nil {

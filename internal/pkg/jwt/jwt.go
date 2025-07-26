@@ -1,30 +1,33 @@
-package service
+package jwt
 
 import (
 	"errors"
+	"jwtgo/pkg/logging"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 
 	customErr "jwtgo/internal/pkg/error/type"
-	"jwtgo/internal/pkg/service/schema"
+	"jwtgo/internal/pkg/jwt/schema"
 )
 
 type JWTService struct {
 	secretKey       string
 	accessLifetime  int
 	refreshLifetime int
+	logger          *logging.Logger
 }
 
-func NewJWTService(secretKey string, accessLifetime, refreshLifetime int) *JWTService {
+func NewJWTService(secretKey string, accessLifetime, refreshLifetime int, logger *logging.Logger) *JWTService {
 	return &JWTService{
 		secretKey:       secretKey,
 		accessLifetime:  accessLifetime,
 		refreshLifetime: refreshLifetime,
+		logger:          logger,
 	}
 }
 
-func (s *JWTService) GenerateTokens(id string) (string, string, customErr.BaseErrorInterface) {
+func (s *JWTService) GenerateTokens(id string) (string, string, customErr.BaseErrorIface) {
 	accessClaims := &schema.Claims{
 		Id: id,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -41,18 +44,20 @@ func (s *JWTService) GenerateTokens(id string) (string, string, customErr.BaseEr
 
 	accessToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims).SignedString([]byte(s.secretKey))
 	if err != nil {
+		s.logger.Error("[JWTService -> GenerateTokens -> NewWithClaims]: ", err)
 		return "", "", customErr.NewInternalServerError("Failed to generate access token")
 	}
 
 	refreshToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims).SignedString([]byte(s.secretKey))
 	if err != nil {
+		s.logger.Error("[JWTService -> GenerateTokens -> NewWithClaims]: ", err)
 		return "", "", customErr.NewInternalServerError("Failed to generate refresh token")
 	}
 
 	return accessToken, refreshToken, nil
 }
 
-func (s *JWTService) ValidateToken(signedToken string) (*schema.Claims, customErr.BaseErrorInterface) {
+func (s *JWTService) ValidateToken(signedToken string) (*schema.Claims, customErr.BaseErrorIface) {
 	token, err := jwt.ParseWithClaims(
 		signedToken,
 		&schema.Claims{},

@@ -28,7 +28,7 @@ func NewUserRepository(client *mongo.Client, database, collection string, logger
 	}
 }
 
-func (ur *UserRepository) GetById(ctx context.Context, id string) (*domainEntity.User, customErr.BaseErrorInterface) {
+func (ur *UserRepository) GetById(ctx context.Context, id string) (*domainEntity.User, customErr.BaseErrorIface) {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		ur.logger.Error("[UserRepository -> GetById -> ObjectIDFromHex]: ", err)
@@ -48,7 +48,7 @@ func (ur *UserRepository) GetById(ctx context.Context, id string) (*domainEntity
 	return mapper.MapMongoUserToDomainUser(&user), nil
 }
 
-func (ur *UserRepository) GetByEmail(ctx context.Context, email string) (*domainEntity.User, customErr.BaseErrorInterface) {
+func (ur *UserRepository) GetByEmail(ctx context.Context, email string) (*domainEntity.User, customErr.BaseErrorIface) {
 	var user mongoEntity.User
 	err := ur.collection.FindOne(ctx, bson.M{"email": email}).Decode(&user)
 
@@ -63,7 +63,7 @@ func (ur *UserRepository) GetByEmail(ctx context.Context, email string) (*domain
 	return mapper.MapMongoUserToDomainUser(&user), nil
 }
 
-func (ur *UserRepository) GetAll(ctx context.Context) ([]*domainEntity.User, customErr.BaseErrorInterface) {
+func (ur *UserRepository) GetAll(ctx context.Context) ([]*domainEntity.User, customErr.BaseErrorIface) {
 	cursor, err := ur.collection.Find(ctx, bson.M{})
 	if err != nil {
 		ur.logger.Error("[UserRepository -> GetAll -> Find]: ", err)
@@ -85,7 +85,7 @@ func (ur *UserRepository) GetAll(ctx context.Context) ([]*domainEntity.User, cus
 	return mapper.MapMongoUsersToDomainUsers(users), nil
 }
 
-func (ur *UserRepository) Create(ctx context.Context, domainUser *domainEntity.User) (*domainEntity.User, customErr.BaseErrorInterface) {
+func (ur *UserRepository) Create(ctx context.Context, domainUser *domainEntity.User) (*domainEntity.User, customErr.BaseErrorIface) {
 	mongoUser, err := mapper.MapDomainUserToMongoUser(domainUser)
 	if err != nil {
 		ur.logger.Error("[UserRepository -> Create -> MapDomainUserToMongoUser]: ", err)
@@ -118,7 +118,7 @@ func (ur *UserRepository) Create(ctx context.Context, domainUser *domainEntity.U
 	return mapper.MapMongoUserToDomainUser(&createdMongoUser), nil
 }
 
-func (ur *UserRepository) Update(ctx context.Context, id string, domainUser *domainEntity.User) (*domainEntity.User, customErr.BaseErrorInterface) {
+func (ur *UserRepository) Update(ctx context.Context, id string, domainUser *domainEntity.User) (*domainEntity.User, customErr.BaseErrorIface) {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		ur.logger.Error("[UserRepository -> Update -> ObjectIDFromHex]: ", err)
@@ -148,7 +148,7 @@ func (ur *UserRepository) Update(ctx context.Context, id string, domainUser *dom
 	return mapper.MapMongoUserToDomainUser(&updatedMongoUser), nil
 }
 
-func (ur *UserRepository) Delete(ctx context.Context, id string) (bool, customErr.BaseErrorInterface) {
+func (ur *UserRepository) Delete(ctx context.Context, id string) (bool, customErr.BaseErrorIface) {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		ur.logger.Error("[UserRepository -> Delete -> ObjectIDFromHex]: ", err)

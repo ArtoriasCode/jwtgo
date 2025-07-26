@@ -6,7 +6,7 @@ import (
 	customErr "jwtgo/internal/pkg/error/type"
 )
 
-type ErrorService interface {
-	ErrToGrpcCode(err customErr.BaseErrorInterface) codes.Code
+type ErrorServiceIface interface {
+	ErrToGrpcCode(err customErr.BaseErrorIface) codes.Code
 	GrpcCodeToHttpErr(err error) (int, string)
 }

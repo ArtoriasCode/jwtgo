@@ -2,26 +2,26 @@ package v1
 
 import (
 	"context"
-	serviceInterface "jwtgo/internal/pkg/interface/service"
 
 	"google.golang.org/grpc/status"
 
 	"jwtgo/internal/app/auth/controller/grpc/mapper"
-	authServiceInterface "jwtgo/internal/app/auth/interface/service"
+	authServiceIface "jwtgo/internal/app/auth/interface/service"
+	pkgServiceIface "jwtgo/internal/pkg/interface/service"
 	authPb "jwtgo/internal/pkg/proto/auth"
 	"jwtgo/pkg/logging"
 )
 
 type AuthServer struct {
 	authPb.UnimplementedAuthServiceServer
-	authService  authServiceInterface.AuthService
-	errorService serviceInterface.ErrorService
+	authService  authServiceIface.AuthServiceIface
+	errorService pkgServiceIface.ErrorServiceIface
 	logger       *logging.Logger
 }
 
 func NewAuthServer(
-	authService authServiceInterface.AuthService,
-	errorService serviceInterface.ErrorService,
+	authService authServiceIface.AuthServiceIface,
+	errorService pkgServiceIface.ErrorServiceIface,
 	logger *logging.Logger,
 ) *AuthServer {
 	return &AuthServer{

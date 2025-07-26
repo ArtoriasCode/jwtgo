@@ -10,9 +10,9 @@ import (
 	"jwtgo/internal/app/api/controller/http/middleware"
 	"jwtgo/internal/app/api/controller/http/v1"
 	errorService "jwtgo/internal/pkg/error"
-	serviceInterface "jwtgo/internal/pkg/interface/service"
+	pkgServiceIface "jwtgo/internal/pkg/interface/service"
+	jwtService "jwtgo/internal/pkg/jwt"
 	authPb "jwtgo/internal/pkg/proto/auth"
-	servicePkg "jwtgo/internal/pkg/service"
 	"jwtgo/pkg/logging"
 )
 
@@ -20,8 +20,8 @@ type ApiGateway struct {
 	Config            *config.Config
 	Logger            *logging.Logger
 	Router            *gin.Engine
-	JWTService        serviceInterface.JWTService
-	ErrorService      serviceInterface.ErrorService
+	JWTService        pkgServiceIface.JWTServiceIface
+	ErrorService      pkgServiceIface.ErrorServiceIface
 	ValidatorClient   *validator.Validate
 	AuthServiceClient authPb.AuthServiceClient
 }
@@ -62,12 +62,21 @@ func (app *ApiGateway) InitializeClients() {
 }
 
 func (app *ApiGateway) InitializeJWTService() {
-	app.JWTService = servicePkg.NewJWTService(app.Config.Security.Secret, app.Config.Security.AccessLifetime, app.Config.Security.RefreshLifetime)
+	app.JWTService = jwtService.NewJWTService(
+		app.Config.Security.Secret,
+		app.Config.Security.AccessLifetime,
+		app.Config.Security.RefreshLifetime,
+		app.Logger,
+	)
+}
+
+func (app *ApiGateway) InitializeErrorService() {
+	app.ErrorService = errorService.NewErrorService()
 }
 
 func (app *ApiGateway) InitializeServices() {
+	app.InitializeErrorService()
 	app.InitializeJWTService()
-	app.ErrorService = errorService.NewErrorService()
 }
 
 func (app *ApiGateway) SetGinMode() {

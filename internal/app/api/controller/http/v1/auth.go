@@ -10,7 +10,7 @@ import (
 	"jwtgo/internal/app/api/controller/http/dto"
 	"jwtgo/internal/app/api/controller/http/mapper"
 	"jwtgo/internal/app/api/controller/http/middleware"
-	serviceInterface "jwtgo/internal/pkg/interface/service"
+	pkgServiceIface "jwtgo/internal/pkg/interface/service"
 	authPb "jwtgo/internal/pkg/proto/auth"
 	"jwtgo/internal/pkg/request"
 	"jwtgo/internal/pkg/request/schema"
@@ -19,14 +19,14 @@ import (
 
 type AuthController struct {
 	authMicroService authPb.AuthServiceClient
-	errorService     serviceInterface.ErrorService
+	errorService     pkgServiceIface.ErrorServiceIface
 	requestValidator *validator.Validate
 	logger           *logging.Logger
 }
 
 func NewAuthController(
 	authMicroService authPb.AuthServiceClient,
-	errorService serviceInterface.ErrorService,
+	errorService pkgServiceIface.ErrorServiceIface,
 	requestValidator *validator.Validate,
 	logger *logging.Logger,
 ) *AuthController {

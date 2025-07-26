@@ -5,23 +5,24 @@ import (
 
 	"jwtgo/internal/app/auth/controller/grpc/dto"
 	"jwtgo/internal/app/auth/controller/grpc/mapper"
+	authServiceIface "jwtgo/internal/app/auth/interface/service"
 	customErr "jwtgo/internal/pkg/error/type"
-	serviceInterface "jwtgo/internal/pkg/interface/service"
+	pkgServiceIface "jwtgo/internal/pkg/interface/service"
 	userPb "jwtgo/internal/pkg/proto/user"
 	"jwtgo/pkg/logging"
 )
 
 type AuthService struct {
 	userMicroService userPb.UserServiceClient
-	jwtService       serviceInterface.JWTService
-	passwordService  serviceInterface.PasswordService
+	jwtService       pkgServiceIface.JWTServiceIface
+	passwordService  authServiceIface.PasswordServiceIface
 	logger           *logging.Logger
 }
 
 func NewAuthService(
 	userMicroService userPb.UserServiceClient,
-	jwtService serviceInterface.JWTService,
-	passwordService serviceInterface.PasswordService,
+	jwtService pkgServiceIface.JWTServiceIface,
+	passwordService authServiceIface.PasswordServiceIface,
 	logger *logging.Logger,
 ) *AuthService {
 	return &AuthService{
@@ -32,7 +33,7 @@ func NewAuthService(
 	}
 }
 
-func (s *AuthService) SignUp(ctx context.Context, userCredentialsDTO *dto.UserCredentialsDTO) (bool, customErr.BaseErrorInterface) {
+func (s *AuthService) SignUp(ctx context.Context, userCredentialsDTO *dto.UserCredentialsDTO) (bool, customErr.BaseErrorIface) {
 	getByEmailRequest := mapper.MapEmailToUserGetByEmailRequest(userCredentialsDTO.Email)
 
 	getByEmailResponse, err := s.userMicroService.GetByEmail(ctx, getByEmailRequest)
@@ -71,7 +72,7 @@ func (s *AuthService) SignUp(ctx context.Context, userCredentialsDTO *dto.UserCr
 	return true, nil
 }
 
-func (s *AuthService) SignIn(ctx context.Context, userCredentialsDTO *dto.UserCredentialsDTO) (*dto.UserTokensDTO, customErr.BaseErrorInterface) {
+func (s *AuthService) SignIn(ctx context.Context, userCredentialsDTO *dto.UserCredentialsDTO) (*dto.UserTokensDTO, customErr.BaseErrorIface) {
 	getByEmailRequest := mapper.MapEmailToUserGetByEmailRequest(userCredentialsDTO.Email)
 
 	getByEmailResponse, err := s.userMicroService.GetByEmail(ctx, getByEmailRequest)
@@ -107,7 +108,7 @@ func (s *AuthService) SignIn(ctx context.Context, userCredentialsDTO *dto.UserCr
 	return mapper.MapTokensToUserTokensDTO(accessToken, refreshToken), nil
 }
 
-func (s *AuthService) SignOut(ctx context.Context, refreshTokenDTO *dto.UserTokenDTO) (bool, customErr.BaseErrorInterface) {
+func (s *AuthService) SignOut(ctx context.Context, refreshTokenDTO *dto.UserTokenDTO) (bool, customErr.BaseErrorIface) {
 	claims, err := s.jwtService.ValidateToken(refreshTokenDTO.Token)
 	if err != nil {
 		return false, err
@@ -139,7 +140,7 @@ func (s *AuthService) SignOut(ctx context.Context, refreshTokenDTO *dto.UserToke
 	return true, nil
 }
 
-func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserTokenDTO) (*dto.UserTokensDTO, customErr.BaseErrorInterface) {
+func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserTokenDTO) (*dto.UserTokensDTO, customErr.BaseErrorIface) {
 	claims, err := s.jwtService.ValidateToken(refreshTokenDTO.Token)
 	if err != nil {
 		return nil, err

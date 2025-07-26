@@ -1,6 +1,6 @@
 package _type
 
-type BaseErrorInterface interface {
+type BaseErrorIface interface {
 	error
 }
 

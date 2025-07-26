@@ -9,13 +9,13 @@ import (
 
 	"jwtgo/internal/app/auth/config"
 	server "jwtgo/internal/app/auth/controller/grpc/v1"
-	authServiceInterface "jwtgo/internal/app/auth/interface/service"
+	authServiceIface "jwtgo/internal/app/auth/interface/service"
 	authService "jwtgo/internal/app/auth/service"
 	errorService "jwtgo/internal/pkg/error"
-	serviceInterface "jwtgo/internal/pkg/interface/service"
+	pkgServiceIface "jwtgo/internal/pkg/interface/service"
+	jwtService "jwtgo/internal/pkg/jwt"
 	authPb "jwtgo/internal/pkg/proto/auth"
 	userPb "jwtgo/internal/pkg/proto/user"
-	servicePkg "jwtgo/internal/pkg/service"
 	"jwtgo/pkg/logging"
 )
 
@@ -23,10 +23,10 @@ type AuthMicroService struct {
 	Config            *config.Config
 	Logger            *logging.Logger
 	Router            *gin.Engine
-	JWTService        serviceInterface.JWTService
-	PasswordService   serviceInterface.PasswordService
-	AuthService       authServiceInterface.AuthService
-	ErrorService      serviceInterface.ErrorService
+	JWTService        pkgServiceIface.JWTServiceIface
+	PasswordService   authServiceIface.PasswordServiceIface
+	AuthService       authServiceIface.AuthServiceIface
+	ErrorService      pkgServiceIface.ErrorServiceIface
 	UserServiceClient userPb.UserServiceClient
 }
 
@@ -60,19 +60,37 @@ func (app *AuthMicroService) InitializeClients() {
 }
 
 func (app *AuthMicroService) InitializeJWTService() {
-	app.JWTService = servicePkg.NewJWTService(app.Config.Security.Secret, app.Config.Security.AccessLifetime, app.Config.Security.RefreshLifetime)
+	app.JWTService = jwtService.NewJWTService(
+		app.Config.Security.Secret,
+		app.Config.Security.AccessLifetime,
+		app.Config.Security.RefreshLifetime,
+		app.Logger,
+	)
 }
 
 func (app *AuthMicroService) InitializePasswordService() {
-	app.PasswordService = servicePkg.NewPasswordService(app.Config.Security.BcryptCost, app.Config.Security.Salt)
+	app.PasswordService = authService.NewPasswordService(
+		app.Config.Security.BcryptCost,
+		app.Config.Security.Salt,
+		app.Logger,
+	)
 }
 
 func (app *AuthMicroService) InitializeAuthService() {
-	app.AuthService = authService.NewAuthService(app.UserServiceClient, app.JWTService, app.PasswordService, app.Logger)
+	app.AuthService = authService.NewAuthService(
+		app.UserServiceClient,
+		app.JWTService,
+		app.PasswordService,
+		app.Logger,
+	)
+}
+
+func (app *AuthMicroService) InitializeErrorService() {
 	app.ErrorService = errorService.NewErrorService()
 }
 
 func (app *AuthMicroService) InitializeServices() {
+	app.InitializeErrorService()
 	app.InitializeJWTService()
 	app.InitializePasswordService()
 	app.InitializeAuthService()
