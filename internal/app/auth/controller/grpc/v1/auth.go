@@ -32,9 +32,9 @@ func NewAuthServer(
 }
 
 func (s *AuthServer) SignUp(ctx context.Context, request *authPb.SignUpRequest) (*authPb.SignUpResponse, error) {
-	userCredentialsDTO := mapper.MapAuthSignUpRequestToUserCredentialsDTO(request)
+	userSignUpDTO := mapper.MapAuthSignUpRequestToUserSignUpDTO(request)
 
-	_, err := s.authService.SignUp(ctx, userCredentialsDTO)
+	_, err := s.authService.SignUp(ctx, userSignUpDTO)
 	if err != nil {
 		return &authPb.SignUpResponse{}, status.Errorf(s.errorService.ErrToGrpcCode(err), err.Error())
 	}
@@ -43,9 +43,9 @@ func (s *AuthServer) SignUp(ctx context.Context, request *authPb.SignUpRequest) 
 }
 
 func (s *AuthServer) SignIn(ctx context.Context, request *authPb.SignInRequest) (*authPb.SignInResponse, error) {
-	userCredentialsDTO := mapper.MapAuthSignInRequestToUserCredentialsDTO(request)
+	userSignInDTO := mapper.MapAuthSignInRequestToUserSignInDTO(request)
 
-	userTokensDTO, err := s.authService.SignIn(ctx, userCredentialsDTO)
+	userTokensDTO, err := s.authService.SignIn(ctx, userSignInDTO)
 	if err != nil {
 		return &authPb.SignInResponse{}, status.Errorf(s.errorService.ErrToGrpcCode(err), err.Error())
 	}

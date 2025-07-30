@@ -41,8 +41,8 @@ func NewAuthController(
 func (ac *AuthController) Register(apiGroup *gin.RouterGroup) {
 	authV1Group := apiGroup.Group("/v1/auth")
 
-	authV1Group.POST("/signup", middleware.Validator[dto.UserCredentialsDTO](ac.requestValidator), ac.SignUp())
-	authV1Group.POST("/signin", middleware.Validator[dto.UserCredentialsDTO](ac.requestValidator), ac.SignIn())
+	authV1Group.POST("/signup", middleware.Validator[dto.UserSignUpDTO](ac.requestValidator), ac.SignUp())
+	authV1Group.POST("/signin", middleware.Validator[dto.UserSignInDTO](ac.requestValidator), ac.SignIn())
 	authV1Group.POST("/signout", ac.SignOut())
 	authV1Group.POST("/refresh", ac.Refresh())
 }
@@ -52,8 +52,8 @@ func (ac *AuthController) SignUp() gin.HandlerFunc {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		defer cancel()
 
-		userCredentialsDTO := c.MustGet("validatedBody").(dto.UserCredentialsDTO)
-		signUpRequest := mapper.MapUserCredentialsDTOToAuthSignUpRequest(&userCredentialsDTO)
+		userSignUpDTO := c.MustGet("validatedBody").(dto.UserSignUpDTO)
+		signUpRequest := mapper.MapUserSignUpDTOToAuthSignUpRequest(&userSignUpDTO)
 
 		signUpResponse, err := ac.authMicroService.SignUp(ctx, signUpRequest)
 		if err != nil {
@@ -71,8 +71,8 @@ func (ac *AuthController) SignIn() gin.HandlerFunc {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		defer cancel()
 
-		userCredentialsDTO := c.MustGet("validatedBody").(dto.UserCredentialsDTO)
-		signInRequest := mapper.MapUserCredentialsDTOToAuthSignInRequest(&userCredentialsDTO)
+		userSignInDTO := c.MustGet("validatedBody").(dto.UserSignInDTO)
+		signInRequest := mapper.MapUserSignInDTOToAuthSignInRequest(&userSignInDTO)
 
 		signInResponse, err := ac.authMicroService.SignIn(ctx, signInRequest)
 		if err != nil {

@@ -33,8 +33,8 @@ func NewAuthService(
 	}
 }
 
-func (s *AuthService) SignUp(ctx context.Context, userCredentialsDTO *dto.UserCredentialsDTO) (bool, customErr.BaseErrorIface) {
-	getByEmailRequest := mapper.MapEmailToUserGetByEmailRequest(userCredentialsDTO.Email)
+func (s *AuthService) SignUp(ctx context.Context, userSignUpDTO *dto.UserSignUpDTO) (bool, customErr.BaseErrorIface) {
+	getByEmailRequest := mapper.MapEmailToUserGetByEmailRequest(userSignUpDTO.Email)
 
 	getByEmailResponse, err := s.userMicroService.GetByEmail(ctx, getByEmailRequest)
 	if err != nil {
@@ -52,15 +52,15 @@ func (s *AuthService) SignUp(ctx context.Context, userCredentialsDTO *dto.UserCr
 		return false, customErr.NewInternalServerError("Failed to create user")
 	}
 
-	hashedPassword, err := s.passwordService.HashPassword(userCredentialsDTO.Password, localSalt)
+	hashedPassword, err := s.passwordService.HashPassword(userSignUpDTO.Password, localSalt)
 	if err != nil {
 		s.logger.Error("[AuthService -> SignUp -> HashPassword]: ", err)
 		return false, customErr.NewInternalServerError("Failed to create user")
 	}
 
-	userCredentialsDTO.Password = hashedPassword
+	userSignUpDTO.Password = hashedPassword
 
-	createRequest := mapper.MapUserCredentialsDTOToUserCreateRequest(userCredentialsDTO)
+	createRequest := mapper.MapUserSignUpDTOToUserCreateRequest(userSignUpDTO)
 	createRequest.Security.Salt = localSalt
 
 	_, err = s.userMicroService.Create(ctx, createRequest)
@@ -72,8 +72,8 @@ func (s *AuthService) SignUp(ctx context.Context, userCredentialsDTO *dto.UserCr
 	return true, nil
 }
 
-func (s *AuthService) SignIn(ctx context.Context, userCredentialsDTO *dto.UserCredentialsDTO) (*dto.UserTokensDTO, customErr.BaseErrorIface) {
-	getByEmailRequest := mapper.MapEmailToUserGetByEmailRequest(userCredentialsDTO.Email)
+func (s *AuthService) SignIn(ctx context.Context, userSignInDTO *dto.UserSignInDTO) (*dto.UserTokensDTO, customErr.BaseErrorIface) {
+	getByEmailRequest := mapper.MapEmailToUserGetByEmailRequest(userSignInDTO.Email)
 
 	getByEmailResponse, err := s.userMicroService.GetByEmail(ctx, getByEmailRequest)
 	if err != nil {
@@ -86,7 +86,7 @@ func (s *AuthService) SignIn(ctx context.Context, userCredentialsDTO *dto.UserCr
 	}
 
 	passwordIsValid := s.passwordService.VerifyPassword(
-		userCredentialsDTO.Password,
+		userSignInDTO.Password,
 		getByEmailResponse.User.Security.Password,
 		getByEmailResponse.User.Security.Salt,
 	)
@@ -127,7 +127,7 @@ func (s *AuthService) SignOut(ctx context.Context, refreshTokenDTO *dto.UserToke
 		return false, customErr.NewInternalServerError("Failed to sign out user")
 	}
 
-	if getByIdResponse == nil {
+	if getByIdResponse.User == nil {
 		return false, customErr.NewNotFoundError("User not found")
 	}
 
@@ -159,7 +159,7 @@ func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserToke
 		return nil, customErr.NewInternalServerError("Failed to refresh tokens")
 	}
 
-	if getByIdResponse == nil {
+	if getByIdResponse.User == nil {
 		return nil, customErr.NewNotFoundError("User not found")
 	}
 

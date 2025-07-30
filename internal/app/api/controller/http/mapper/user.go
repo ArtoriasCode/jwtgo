@@ -5,7 +5,7 @@ import (
 	authPb "jwtgo/internal/pkg/proto/auth"
 )
 
-func MapUserCredentialsDTOToAuthSignUpRequest(dto *dto.UserCredentialsDTO) *authPb.SignUpRequest {
+func MapUserSignUpDTOToAuthSignUpRequest(dto *dto.UserSignUpDTO) *authPb.SignUpRequest {
 	return &authPb.SignUpRequest{
 		Email:    dto.Email,
 		Password: dto.Password,
@@ -13,7 +13,7 @@ func MapUserCredentialsDTOToAuthSignUpRequest(dto *dto.UserCredentialsDTO) *auth
 	}
 }
 
-func MapUserCredentialsDTOToAuthSignInRequest(dto *dto.UserCredentialsDTO) *authPb.SignInRequest {
+func MapUserSignInDTOToAuthSignInRequest(dto *dto.UserSignInDTO) *authPb.SignInRequest {
 	return &authPb.SignInRequest{
 		Email:    dto.Email,
 		Password: dto.Password,
