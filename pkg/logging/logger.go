@@ -1,55 +1,79 @@
 package logging
 
 import (
-	"fmt"
-	"log"
 	"os"
-	"path"
-	"runtime"
+	"strings"
 	"sync"
 
-	"github.com/sirupsen/logrus"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 type Logger struct {
-	*logrus.Entry
+	*zap.SugaredLogger
 }
 
-func (s *Logger) ExtraFields(fields map[string]interface{}) *Logger {
-	return &Logger{s.WithFields(fields)}
+func (l *Logger) ExtraFields(fields map[string]interface{}) *Logger {
+	zapFields := make([]interface{}, 0, len(fields)*2)
+
+	for k, v := range fields {
+		zapFields = append(zapFields, k, v)
+	}
+
+	return &Logger{l.With(zapFields...)}
 }
 
-var instance Logger
-var once sync.Once
+var (
+	instance Logger
+	once     sync.Once
+)
 
 func GetLogger(level string) Logger {
 	once.Do(func() {
-		parsedLevel, err := logrus.ParseLevel(level)
-		if err != nil {
-			log.Fatalln(err)
+		zapLevel := parseLevel(level)
+
+		encoderCfg := zapcore.EncoderConfig{
+			TimeKey:      "time",
+			LevelKey:     "level",
+			NameKey:      "logger",
+			CallerKey:    "caller",
+			MessageKey:   "msg",
+			FunctionKey:  zapcore.OmitKey,
+			EncodeLevel:  zapcore.CapitalColorLevelEncoder,
+			EncodeTime:   zapcore.TimeEncoderOfLayout("2006-01-02 15:04:05"),
+			EncodeCaller: zapcore.ShortCallerEncoder,
 		}
 
-		l := logrus.New()
-		l.SetReportCaller(true)
+		consoleEncoder := zapcore.NewConsoleEncoder(encoderCfg)
 
-		l.Formatter = &logrus.TextFormatter{
-			CallerPrettyfier: func(f *runtime.Frame) (string, string) {
-				filename := path.Base(f.File)
-				return fmt.Sprintf("%s:%d", filename, f.Line), fmt.Sprintf(" %s", f.Function)
-			},
-			DisableQuote:    true,
-			DisableColors:   false,
-			ForceColors:     true,
-			FullTimestamp:   true,
-			PadLevelText:    true,
-			TimestampFormat: "2006-01-02 15:04:05",
-		}
+		core := zapcore.NewCore(
+			consoleEncoder,
+			zapcore.Lock(os.Stdout),
+			zapLevel,
+		)
 
-		l.SetOutput(os.Stdout)
-		l.SetLevel(parsedLevel)
-
-		instance = Logger{logrus.NewEntry(l)}
+		logger := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
+		instance = Logger{logger.Sugar()}
 	})
 
 	return instance
+}
+
+func parseLevel(level string) zapcore.Level {
+	switch strings.ToLower(level) {
+	case "debug":
+		return zapcore.DebugLevel
+	case "info":
+		return zapcore.InfoLevel
+	case "warn", "warning":
+		return zapcore.WarnLevel
+	case "error":
+		return zapcore.ErrorLevel
+	case "fatal":
+		return zapcore.FatalLevel
+	case "panic":
+		return zapcore.PanicLevel
+	default:
+		return zapcore.InfoLevel
+	}
 }

@@ -28,7 +28,7 @@ The API is accessed via Reverse Proxy, in our case it is Nginx. It handles all i
 - **[JWT](https://pkg.go.dev/github.com/golang-jwt/jwt/v5)**: Go implementation of JSON Web Tokens (JWT).
 - **[Cleanenv](https://pkg.go.dev/github.com/ilyakaznacheev/cleanenv)**: Clean and minimalistic environment configuration reader for Golang.
 - **[Bcrypt](https://pkg.go.dev/golang.org/x/crypto/bcrypt)**: Package bcrypt implements Provos and Mazières's bcrypt adaptive hashing algorithm.
-- **[Logrus](https://pkg.go.dev/github.com/sirupsen/logrus)**: Structured, pluggable logging for Go.
+- **[Zap](https://pkg.go.dev/go.uber.org/zap)**: Blazing fast, structured, leveled logging in Go.
 - **[Validator](https://pkg.go.dev/github.com/go-playground/validator/v10)**: Go Struct and Field validation, including Cross Field, Cross Struct, Map, Slice and Array diving.
 
 ## 📝 Request flow without JWT authentication middleware

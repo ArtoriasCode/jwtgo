@@ -103,14 +103,6 @@ func (app *ApiGateway) InitializeControllers() {
 	app.Router.Use(middleware.Authentication(app.JWTService, app.AuthServiceClient))
 }
 
-func (app *ApiGateway) Run() {
-	app.Logger.Info("API gateway is running on http://" + app.Config.Service.Api.Host + ":" + app.Config.Service.Api.Port)
-	err := app.Router.Run(app.Config.Service.Api.Host + ":" + app.Config.Service.Api.Port)
-	if err != nil {
-		app.Logger.Fatal("Failed to start the application", err)
-	}
-}
-
 func (app *ApiGateway) Initialize() {
 	app.InitializeConfig()
 	app.SetGinMode()
@@ -118,4 +110,14 @@ func (app *ApiGateway) Initialize() {
 	app.InitializeClients()
 	app.InitializeServices()
 	app.InitializeControllers()
+}
+
+func (app *ApiGateway) Run() {
+	app.Logger.Info("API gateway is running on http://" + app.Config.Service.Api.Host + ":" + app.Config.Service.Api.Port)
+
+	err := app.Router.Run(app.Config.Service.Api.Host + ":" + app.Config.Service.Api.Port)
+
+	if err != nil {
+		app.Logger.Fatal("Failed to start the application", err)
+	}
 }
