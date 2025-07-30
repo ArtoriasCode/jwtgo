@@ -73,7 +73,9 @@ cd jwtgo
   --header 'Content-Type: application/json' \
   --data-raw '{
     "email": "test@gmail.com",
-    "password": "securepassword"
+    "password": "securepassword",
+    "username": "Artorias",
+    "gender": "male"
   }'
   ```
   
