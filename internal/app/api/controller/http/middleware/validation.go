@@ -17,7 +17,36 @@ func Validator[T any](validate *validator.Validate) gin.HandlerFunc {
 		}
 
 		if err := validate.Struct(obj); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request parameters"})
+			if validationErrors, ok := err.(validator.ValidationErrors); ok {
+				errors := make(map[string]string)
+				for _, e := range validationErrors {
+					fieldName := e.Field()
+					tag := e.Tag()
+					param := e.Param()
+
+					var msg string
+					switch tag {
+					case "required":
+						msg = fieldName + " is required"
+					case "email":
+						msg = fieldName + " must be a valid email address"
+					case "min":
+						msg = fieldName + " must be at least " + param + " characters long"
+					case "max":
+						msg = fieldName + " cannot be longer than " + param + " characters"
+					case "oneof":
+						msg = fieldName + " must be one of the allowed values: " + param
+					default:
+						msg = fieldName + " failed validation on " + tag
+					}
+
+					errors[fieldName] = msg
+				}
+				c.JSON(http.StatusBadRequest, gin.H{"errors": errors})
+			} else {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			}
+
 			c.Abort()
 			return
 		}
