@@ -11,9 +11,11 @@ import (
 
 func MapMongoUserToDomainUser(mongoUser *mongoEntity.User) *domainEntity.User {
 	return &domainEntity.User{
-		Id:    mongoUser.Id.Hex(),
-		Email: mongoUser.Email,
-		Role:  mongoUser.Role,
+		Id:       mongoUser.Id.Hex(),
+		Email:    mongoUser.Email,
+		Role:     mongoUser.Role,
+		Username: mongoUser.Username,
+		Gender:   mongoUser.Gender,
 		Security: domainEntity.Security{
 			Password:     mongoUser.Security.Password,
 			Salt:         mongoUser.Security.Salt,
@@ -38,9 +40,11 @@ func MapDomainUserToMongoUser(domainUser *domainEntity.User) (*mongoEntity.User,
 	}
 
 	return &mongoEntity.User{
-		Id:    objID,
-		Email: domainUser.Email,
-		Role:  domainUser.Role,
+		Id:       objID,
+		Email:    domainUser.Email,
+		Role:     domainUser.Role,
+		Username: domainUser.Username,
+		Gender:   domainUser.Gender,
 		Security: mongoEntity.Security{
 			Password:     domainUser.Security.Password,
 			Salt:         domainUser.Security.Salt,
@@ -64,6 +68,8 @@ func MapDomainUserToBsonUser(domainUser *domainEntity.User) bson.M {
 
 	updateFields["email"] = domainUser.Email
 	updateFields["role"] = domainUser.Role
+	updateFields["username"] = domainUser.Username
+	updateFields["gender"] = domainUser.Gender
 	updateFields["security"] = bson.M{
 		"password":      domainUser.Security.Password,
 		"salt":          domainUser.Security.Salt,

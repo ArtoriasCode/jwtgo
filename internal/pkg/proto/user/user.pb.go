@@ -86,9 +86,11 @@ type User struct {
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
 	Role          string                 `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`
-	Security      *Security              `protobuf:"bytes,4,opt,name=security,proto3" json:"security,omitempty"`
-	CreatedAt     int64                  `protobuf:"varint,5,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     int64                  `protobuf:"varint,6,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	Username      string                 `protobuf:"bytes,4,opt,name=username,proto3" json:"username,omitempty"`
+	Gender        string                 `protobuf:"bytes,5,opt,name=gender,proto3" json:"gender,omitempty"`
+	Security      *Security              `protobuf:"bytes,6,opt,name=security,proto3" json:"security,omitempty"`
+	CreatedAt     int64                  `protobuf:"varint,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     int64                  `protobuf:"varint,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -140,6 +142,20 @@ func (x *User) GetEmail() string {
 func (x *User) GetRole() string {
 	if x != nil {
 		return x.Role
+	}
+	return ""
+}
+
+func (x *User) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+func (x *User) GetGender() string {
+	if x != nil {
+		return x.Gender
 	}
 	return ""
 }
@@ -345,7 +361,9 @@ type CreateRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
 	Role          string                 `protobuf:"bytes,2,opt,name=role,proto3" json:"role,omitempty"`
-	Security      *Security              `protobuf:"bytes,3,opt,name=security,proto3" json:"security,omitempty"`
+	Username      string                 `protobuf:"bytes,3,opt,name=username,proto3" json:"username,omitempty"`
+	Gender        string                 `protobuf:"bytes,4,opt,name=gender,proto3" json:"gender,omitempty"`
+	Security      *Security              `protobuf:"bytes,5,opt,name=security,proto3" json:"security,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -390,6 +408,20 @@ func (x *CreateRequest) GetEmail() string {
 func (x *CreateRequest) GetRole() string {
 	if x != nil {
 		return x.Role
+	}
+	return ""
+}
+
+func (x *CreateRequest) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+func (x *CreateRequest) GetGender() string {
+	if x != nil {
+		return x.Gender
 	}
 	return ""
 }
@@ -450,7 +482,9 @@ type UpdateRequest struct {
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
 	Role          string                 `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`
-	Security      *Security              `protobuf:"bytes,4,opt,name=security,proto3" json:"security,omitempty"`
+	Username      string                 `protobuf:"bytes,4,opt,name=username,proto3" json:"username,omitempty"`
+	Gender        string                 `protobuf:"bytes,5,opt,name=gender,proto3" json:"gender,omitempty"`
+	Security      *Security              `protobuf:"bytes,6,opt,name=security,proto3" json:"security,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -502,6 +536,20 @@ func (x *UpdateRequest) GetEmail() string {
 func (x *UpdateRequest) GetRole() string {
 	if x != nil {
 		return x.Role
+	}
+	return ""
+}
+
+func (x *UpdateRequest) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+func (x *UpdateRequest) GetGender() string {
+	if x != nil {
+		return x.Gender
 	}
 	return ""
 }
@@ -653,16 +701,18 @@ const file_proto_user_user_proto_rawDesc = "" +
 	"\bSecurity\x12\x1a\n" +
 	"\bpassword\x18\x01 \x01(\tR\bpassword\x12\x12\n" +
 	"\x04salt\x18\x02 \x01(\tR\x04salt\x12#\n" +
-	"\rrefresh_token\x18\x03 \x01(\tR\frefreshToken\"\xaa\x01\n" +
+	"\rrefresh_token\x18\x03 \x01(\tR\frefreshToken\"\xde\x01\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x12\n" +
-	"\x04role\x18\x03 \x01(\tR\x04role\x12*\n" +
-	"\bsecurity\x18\x04 \x01(\v2\x0e.user.SecurityR\bsecurity\x12\x1d\n" +
+	"\x04role\x18\x03 \x01(\tR\x04role\x12\x1a\n" +
+	"\busername\x18\x04 \x01(\tR\busername\x12\x16\n" +
+	"\x06gender\x18\x05 \x01(\tR\x06gender\x12*\n" +
+	"\bsecurity\x18\x06 \x01(\v2\x0e.user.SecurityR\bsecurity\x12\x1d\n" +
 	"\n" +
-	"created_at\x18\x05 \x01(\x03R\tcreatedAt\x12\x1d\n" +
+	"created_at\x18\a \x01(\x03R\tcreatedAt\x12\x1d\n" +
 	"\n" +
-	"updated_at\x18\x06 \x01(\x03R\tupdatedAt\" \n" +
+	"updated_at\x18\b \x01(\x03R\tupdatedAt\" \n" +
 	"\x0eGetByIdRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"1\n" +
 	"\x0fGetByIdResponse\x12\x1e\n" +
@@ -672,19 +722,23 @@ const file_proto_user_user_proto_rawDesc = "" +
 	"\x05email\x18\x01 \x01(\tR\x05email\"4\n" +
 	"\x12GetByEmailResponse\x12\x1e\n" +
 	"\x04user\x18\x01 \x01(\v2\n" +
-	".user.UserR\x04user\"e\n" +
+	".user.UserR\x04user\"\x99\x01\n" +
 	"\rCreateRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x12\n" +
-	"\x04role\x18\x02 \x01(\tR\x04role\x12*\n" +
-	"\bsecurity\x18\x03 \x01(\v2\x0e.user.SecurityR\bsecurity\"0\n" +
+	"\x04role\x18\x02 \x01(\tR\x04role\x12\x1a\n" +
+	"\busername\x18\x03 \x01(\tR\busername\x12\x16\n" +
+	"\x06gender\x18\x04 \x01(\tR\x06gender\x12*\n" +
+	"\bsecurity\x18\x05 \x01(\v2\x0e.user.SecurityR\bsecurity\"0\n" +
 	"\x0eCreateResponse\x12\x1e\n" +
 	"\x04user\x18\x01 \x01(\v2\n" +
-	".user.UserR\x04user\"u\n" +
+	".user.UserR\x04user\"\xa9\x01\n" +
 	"\rUpdateRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x12\n" +
-	"\x04role\x18\x03 \x01(\tR\x04role\x12*\n" +
-	"\bsecurity\x18\x04 \x01(\v2\x0e.user.SecurityR\bsecurity\"0\n" +
+	"\x04role\x18\x03 \x01(\tR\x04role\x12\x1a\n" +
+	"\busername\x18\x04 \x01(\tR\busername\x12\x16\n" +
+	"\x06gender\x18\x05 \x01(\tR\x06gender\x12*\n" +
+	"\bsecurity\x18\x06 \x01(\v2\x0e.user.SecurityR\bsecurity\"0\n" +
 	"\x0eUpdateResponse\x12\x1e\n" +
 	"\x04user\x18\x01 \x01(\v2\n" +
 	".user.UserR\x04user\"\x1f\n" +

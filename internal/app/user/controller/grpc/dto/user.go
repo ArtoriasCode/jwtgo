@@ -10,6 +10,8 @@ type UserDTO struct {
 	Id        string      `json:"id"`
 	Email     string      `json:"email"`
 	Role      string      `json:"role"`
+	Username  string      `json:"username"`
+	Gender    string      `json:"gender"`
 	Security  SecurityDTO `json:"security"`
 	CreatedAt int64       `json:"created_at"`
 	UpdatedAt int64       `json:"updated_at"`
@@ -26,6 +28,8 @@ type UserEmailDTO struct {
 type UserCreateDTO struct {
 	Email    string      `json:"email" validate:"required,email"`
 	Role     string      `json:"role"`
+	Username string      `json:"username"`
+	Gender   string      `json:"gender"`
 	Security SecurityDTO `json:"security"`
 }
 
@@ -33,5 +37,7 @@ type UserUpdateDTO struct {
 	Id       string      `json:"id"`
 	Email    string      `json:"email"`
 	Role     string      `json:"role"`
+	Username string      `json:"username"`
+	Gender   string      `json:"gender"`
 	Security SecurityDTO `json:"security"`
 }

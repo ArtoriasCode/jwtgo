@@ -15,6 +15,8 @@ message SignUpRequest {
   string email = 1;
   string password = 2;
   string role = 3;
+  string username = 4;
+  string gender = 5;
 }
 
 message SignUpResponse {

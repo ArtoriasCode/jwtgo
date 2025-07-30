@@ -18,6 +18,8 @@ func MapAuthSignUpRequestToUserSignUpDTO(request *authPb.SignUpRequest) *dto.Use
 		Email:    request.Email,
 		Password: request.Password,
 		Role:     request.Role,
+		Username: request.Username,
+		Gender:   request.Gender,
 	}
 }
 
@@ -70,8 +72,10 @@ func MapEmailToUserGetByEmailRequest(email string) *userPb.GetByEmailRequest {
 
 func MapUserSignUpDTOToUserCreateRequest(dto *dto.UserSignUpDTO) *userPb.CreateRequest {
 	return &userPb.CreateRequest{
-		Email: dto.Email,
-		Role:  dto.Role,
+		Email:    dto.Email,
+		Role:     dto.Role,
+		Username: dto.Username,
+		Gender:   dto.Gender,
 		Security: &userPb.Security{
 			Password: dto.Password,
 		},
@@ -80,9 +84,11 @@ func MapUserSignUpDTOToUserCreateRequest(dto *dto.UserSignUpDTO) *userPb.CreateR
 
 func MapUserGetByEmailResponseToUserUpdateRequest(response *userPb.GetByEmailResponse) *userPb.UpdateRequest {
 	return &userPb.UpdateRequest{
-		Id:    response.User.Id,
-		Email: response.User.Email,
-		Role:  response.User.Role,
+		Id:       response.User.Id,
+		Email:    response.User.Email,
+		Role:     response.User.Role,
+		Username: response.User.Username,
+		Gender:   response.User.Gender,
 		Security: &userPb.Security{
 			Password:     response.User.Security.Password,
 			Salt:         response.User.Security.Salt,
@@ -93,9 +99,11 @@ func MapUserGetByEmailResponseToUserUpdateRequest(response *userPb.GetByEmailRes
 
 func MapUserGetByIdResponseToUserUpdateRequest(response *userPb.GetByIdResponse) *userPb.UpdateRequest {
 	return &userPb.UpdateRequest{
-		Id:    response.User.Id,
-		Email: response.User.Email,
-		Role:  response.User.Role,
+		Id:       response.User.Id,
+		Email:    response.User.Email,
+		Role:     response.User.Role,
+		Username: response.User.Username,
+		Gender:   response.User.Gender,
 		Security: &userPb.Security{
 			Password:     response.User.Security.Password,
 			Salt:         response.User.Security.Salt,

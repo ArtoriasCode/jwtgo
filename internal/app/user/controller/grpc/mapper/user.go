@@ -33,8 +33,10 @@ func MapUserDTOToUserGetByEmailResponse(dto *dto.UserDTO) *userPb.GetByEmailResp
 
 func MapUserCreateRequestToUserCreateDTO(request *userPb.CreateRequest) *dto.UserCreateDTO {
 	return &dto.UserCreateDTO{
-		Email: request.Email,
-		Role:  request.Role,
+		Email:    request.Email,
+		Role:     request.Role,
+		Username: request.Username,
+		Gender:   request.Gender,
 		Security: dto.SecurityDTO{
 			Password:     request.Security.Password,
 			Salt:         request.Security.Salt,
@@ -51,9 +53,11 @@ func MapUserDTOToUserCreateResponse(dto *dto.UserDTO) *userPb.CreateResponse {
 
 func MapUserUpdateRequestToUserUpdateDTO(request *userPb.UpdateRequest) *dto.UserUpdateDTO {
 	return &dto.UserUpdateDTO{
-		Id:    request.Id,
-		Email: request.Email,
-		Role:  request.Role,
+		Id:       request.Id,
+		Email:    request.Email,
+		Role:     request.Role,
+		Username: request.Username,
+		Gender:   request.Gender,
 		Security: dto.SecurityDTO{
 			Password:     request.Security.Password,
 			Salt:         request.Security.Salt,
@@ -82,9 +86,11 @@ func MapStatusToDeleteResponse(status bool) *userPb.DeleteResponse {
 
 func MapUserEntityToUserDTO(entity *entity.User) *dto.UserDTO {
 	return &dto.UserDTO{
-		Id:    entity.Id,
-		Email: entity.Email,
-		Role:  entity.Role,
+		Id:       entity.Id,
+		Email:    entity.Email,
+		Role:     entity.Role,
+		Username: entity.Username,
+		Gender:   entity.Gender,
 		Security: dto.SecurityDTO{
 			Password:     entity.Security.Password,
 			Salt:         entity.Security.Salt,
@@ -97,8 +103,10 @@ func MapUserEntityToUserDTO(entity *entity.User) *dto.UserDTO {
 
 func MapUserCreateDTOToUserEntity(dto *dto.UserCreateDTO) *entity.User {
 	return &entity.User{
-		Email: dto.Email,
-		Role:  dto.Role,
+		Email:    dto.Email,
+		Role:     dto.Role,
+		Username: dto.Username,
+		Gender:   dto.Gender,
 		Security: entity.Security{
 			Password:     dto.Security.Password,
 			Salt:         dto.Security.Salt,
@@ -109,9 +117,11 @@ func MapUserCreateDTOToUserEntity(dto *dto.UserCreateDTO) *entity.User {
 
 func MapUserUpdateDTOToUserEntity(dto *dto.UserUpdateDTO) *entity.User {
 	return &entity.User{
-		Id:    dto.Id,
-		Email: dto.Email,
-		Role:  dto.Role,
+		Id:       dto.Id,
+		Email:    dto.Email,
+		Role:     dto.Role,
+		Username: dto.Username,
+		Gender:   dto.Gender,
 		Security: entity.Security{
 			Password:     dto.Security.Password,
 			Salt:         dto.Security.Salt,
@@ -122,9 +132,11 @@ func MapUserUpdateDTOToUserEntity(dto *dto.UserUpdateDTO) *entity.User {
 
 func MapUserDTOToUserProto(dto *dto.UserDTO) *userPb.User {
 	return &userPb.User{
-		Id:    dto.Id,
-		Email: dto.Email,
-		Role:  dto.Role,
+		Id:       dto.Id,
+		Email:    dto.Email,
+		Role:     dto.Role,
+		Username: dto.Username,
+		Gender:   dto.Gender,
 		Security: &userPb.Security{
 			Password:     dto.Security.Password,
 			Salt:         dto.Security.Salt,

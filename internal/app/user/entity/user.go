@@ -10,6 +10,8 @@ type User struct {
 	Id        string   `bson:"_id,omitempty" json:"id"`
 	Email     string   `bson:"email" json:"email"`
 	Role      string   `bson:"role" json:"role"`
+	Username  string   `bson:"username" json:"username"`
+	Gender    string   `bson:"gender" json:"gender"`
 	Security  Security `bson:"security" json:"security"`
 	CreatedAt int64    `bson:"created_at" json:"created_at"`
 	UpdatedAt int64    `bson:"updated_at" json:"updated_at"`
