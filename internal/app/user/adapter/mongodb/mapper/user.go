@@ -11,13 +11,16 @@ import (
 
 func MapMongoUserToDomainUser(mongoUser *mongoEntity.User) *domainEntity.User {
 	return &domainEntity.User{
-		Id:           mongoUser.Id.Hex(),
-		Email:        mongoUser.Email,
-		Password:     mongoUser.Password,
-		Salt:         mongoUser.Salt,
-		RefreshToken: mongoUser.RefreshToken,
-		CreatedAt:    mongoUser.CreatedAt,
-		UpdatedAt:    mongoUser.UpdatedAt,
+		Id:    mongoUser.Id.Hex(),
+		Email: mongoUser.Email,
+		Role:  mongoUser.Role,
+		Security: domainEntity.Security{
+			Password:     mongoUser.Security.Password,
+			Salt:         mongoUser.Security.Salt,
+			RefreshToken: mongoUser.Security.RefreshToken,
+		},
+		CreatedAt: mongoUser.CreatedAt,
+		UpdatedAt: mongoUser.UpdatedAt,
 	}
 }
 
@@ -35,13 +38,16 @@ func MapDomainUserToMongoUser(domainUser *domainEntity.User) (*mongoEntity.User,
 	}
 
 	return &mongoEntity.User{
-		Id:           objID,
-		Email:        domainUser.Email,
-		Password:     domainUser.Password,
-		Salt:         domainUser.Salt,
-		RefreshToken: domainUser.RefreshToken,
-		CreatedAt:    domainUser.CreatedAt,
-		UpdatedAt:    domainUser.UpdatedAt,
+		Id:    objID,
+		Email: domainUser.Email,
+		Role:  domainUser.Role,
+		Security: mongoEntity.Security{
+			Password:     domainUser.Security.Password,
+			Salt:         domainUser.Security.Salt,
+			RefreshToken: domainUser.Security.RefreshToken,
+		},
+		CreatedAt: domainUser.CreatedAt,
+		UpdatedAt: domainUser.UpdatedAt,
 	}, nil
 }
 
@@ -57,9 +63,12 @@ func MapDomainUserToBsonUser(domainUser *domainEntity.User) bson.M {
 	updateFields := bson.M{}
 
 	updateFields["email"] = domainUser.Email
-	updateFields["password"] = domainUser.Password
-	updateFields["salt"] = domainUser.Salt
-	updateFields["refresh_token"] = domainUser.RefreshToken
+	updateFields["role"] = domainUser.Role
+	updateFields["security"] = bson.M{
+		"password":      domainUser.Security.Password,
+		"salt":          domainUser.Security.Salt,
+		"refresh_token": domainUser.Security.RefreshToken,
+	}
 	updateFields["updated_at"] = domainUser.UpdatedAt
 
 	return updateFields

@@ -61,7 +61,7 @@ func (s *AuthService) SignUp(ctx context.Context, userCredentialsDTO *dto.UserCr
 	userCredentialsDTO.Password = hashedPassword
 
 	createRequest := mapper.MapUserCredentialsDTOToUserCreateRequest(userCredentialsDTO)
-	createRequest.Salt = localSalt
+	createRequest.Security.Salt = localSalt
 
 	_, err = s.userMicroService.Create(ctx, createRequest)
 	if err != nil {
@@ -85,18 +85,23 @@ func (s *AuthService) SignIn(ctx context.Context, userCredentialsDTO *dto.UserCr
 		return nil, customErr.NewInvalidCredentialsError("Invalid login or password")
 	}
 
-	passwordIsValid := s.passwordService.VerifyPassword(userCredentialsDTO.Password, getByEmailResponse.User.Password, getByEmailResponse.User.Salt)
+	passwordIsValid := s.passwordService.VerifyPassword(
+		userCredentialsDTO.Password,
+		getByEmailResponse.User.Security.Password,
+		getByEmailResponse.User.Security.Salt,
+	)
+
 	if !passwordIsValid {
 		return nil, customErr.NewInvalidCredentialsError("Invalid login or password")
 	}
 
-	accessToken, refreshToken, err := s.jwtService.GenerateTokens(getByEmailResponse.User.Id)
+	accessToken, refreshToken, err := s.jwtService.GenerateTokens(getByEmailResponse.User.Id, getByEmailResponse.User.Role)
 	if err != nil {
 		s.logger.Error("[AuthService -> SignIn -> GenerateTokens]: ", err)
 		return nil, customErr.NewInternalServerError("Failed to sign in user")
 	}
 
-	getByEmailResponse.User.RefreshToken = refreshToken
+	getByEmailResponse.User.Security.RefreshToken = refreshToken
 	updateRequest := mapper.MapUserGetByEmailResponseToUserUpdateRequest(getByEmailResponse)
 
 	_, err = s.userMicroService.Update(ctx, updateRequest)
@@ -126,7 +131,7 @@ func (s *AuthService) SignOut(ctx context.Context, refreshTokenDTO *dto.UserToke
 		return false, customErr.NewNotFoundError("User not found")
 	}
 
-	getByIdResponse.User.RefreshToken = ""
+	getByIdResponse.User.Security.RefreshToken = ""
 	getByIdResponse.User.Id = claims.Id
 
 	updateRequest := mapper.MapUserGetByIdResponseToUserUpdateRequest(getByIdResponse)
@@ -158,17 +163,17 @@ func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserToke
 		return nil, customErr.NewNotFoundError("User not found")
 	}
 
-	if refreshTokenDTO.Token != getByIdResponse.User.RefreshToken {
+	if refreshTokenDTO.Token != getByIdResponse.User.Security.RefreshToken {
 		return nil, customErr.NewInvalidTokenError("Invalid refresh token")
 	}
 
-	accessToken, refreshToken, err := s.jwtService.GenerateTokens(getByIdResponse.User.Id)
+	accessToken, refreshToken, err := s.jwtService.GenerateTokens(getByIdResponse.User.Id, getByIdResponse.User.Role)
 	if err != nil {
 		s.logger.Error("[AuthService -> Refresh -> GenerateTokens]: ", err)
 		return nil, customErr.NewInternalServerError("Failed to refresh tokens")
 	}
 
-	getByIdResponse.User.RefreshToken = refreshToken
+	getByIdResponse.User.Security.RefreshToken = refreshToken
 	getByIdResponse.User.Id = claims.Id
 
 	updateRequest := mapper.MapUserGetByIdResponseToUserUpdateRequest(getByIdResponse)

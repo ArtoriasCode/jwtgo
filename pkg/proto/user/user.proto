@@ -12,14 +12,19 @@ service UserService {
   rpc Delete (DeleteRequest) returns (DeleteResponse);
 }
 
+message Security {
+  string password = 1;
+  string salt = 2;
+  string refresh_token = 3;
+}
+
 message User {
   string id = 1;
   string email = 2;
-  string password = 3;
-  string salt = 4;
-  string refresh_token = 5;
-  int64 created_at = 6;
-  int64 updated_at = 7;
+  string role = 3;
+  Security security = 4;
+  int64 created_at = 5;
+  int64 updated_at = 6;
 }
 
 message GetByIdRequest {
@@ -40,9 +45,8 @@ message GetByEmailResponse {
 
 message CreateRequest {
   string email = 1;
-  string password = 2;
-  string salt = 3;
-  string refresh_token = 4;
+  string role = 2;
+  Security security = 3;
 }
 
 message CreateResponse {
@@ -52,9 +56,8 @@ message CreateResponse {
 message UpdateRequest {
   string id = 1;
   string email = 2;
-  string password = 3;
-  string salt = 4;
-  string refresh_token = 5;
+  string role = 3;
+  Security security = 4;
 }
 
 message UpdateResponse {

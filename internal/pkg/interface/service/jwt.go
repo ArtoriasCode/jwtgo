@@ -6,6 +6,6 @@ import (
 )
 
 type JWTServiceIface interface {
-	GenerateTokens(id string) (string, string, customErr.BaseErrorIface)
+	GenerateTokens(id, role string) (string, string, customErr.BaseErrorIface)
 	ValidateToken(signedToken string) (*schema.Claims, customErr.BaseErrorIface)
 }

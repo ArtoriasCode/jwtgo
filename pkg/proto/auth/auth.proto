@@ -14,6 +14,7 @@ service AuthService {
 message SignUpRequest {
   string email = 1;
   string password = 2;
+  string role = 3;
 }
 
 message SignUpResponse {

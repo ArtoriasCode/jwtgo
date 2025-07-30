@@ -9,6 +9,7 @@ func MapUserCredentialsDTOToAuthSignUpRequest(dto *dto.UserCredentialsDTO) *auth
 	return &authPb.SignUpRequest{
 		Email:    dto.Email,
 		Password: dto.Password,
+		Role:     "user",
 	}
 }
 

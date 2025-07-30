@@ -1,13 +1,18 @@
 package dto
 
-type UserDTO struct {
-	Id           string `json:"id"`
-	Email        string `json:"email"`
+type SecurityDTO struct {
 	Password     string `json:"password"`
 	Salt         string `json:"salt"`
 	RefreshToken string `json:"refresh_token"`
-	CreatedAt    int64  `json:"created_at"`
-	UpdatedAt    int64  `json:"updated_at"`
+}
+
+type UserDTO struct {
+	Id        string      `json:"id"`
+	Email     string      `json:"email"`
+	Role      string      `json:"role"`
+	Security  SecurityDTO `json:"security"`
+	CreatedAt int64       `json:"created_at"`
+	UpdatedAt int64       `json:"updated_at"`
 }
 
 type UserTokenDTO struct {
@@ -22,4 +27,5 @@ type UserTokensDTO struct {
 type UserCredentialsDTO struct {
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,min=6,max=64"`
+	Role     string `json:"role" validate:"required,oneof=admin user"`
 }
