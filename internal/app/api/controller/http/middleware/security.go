@@ -32,9 +32,9 @@ func Authentication(jwtService pkgServiceIface.JWTServiceIface, authMicroService
 			}
 
 			ctx := c.Request.Context()
-			refreshRequest := mapper.MapRefreshTokenToAuthRefreshRequest(refreshToken.Value)
+			authRefreshRequest := mapper.MapRefreshTokenToAuthRefreshRequest(refreshToken.Value)
 
-			refreshResponse, err := authMicroService.Refresh(ctx, refreshRequest)
+			authRefreshResponse, err := authMicroService.Refresh(ctx, authRefreshRequest)
 			if err != nil {
 				c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid refresh token"})
 				c.Abort()
@@ -42,11 +42,11 @@ func Authentication(jwtService pkgServiceIface.JWTServiceIface, authMicroService
 			}
 
 			request.SetCookies(c, []schema.Cookie{
-				{Name: "access_token", Value: refreshResponse.AccessToken, Duration: 7 * 24 * time.Hour},
-				{Name: "refresh_token", Value: refreshResponse.RefreshToken, Duration: 7 * 24 * time.Hour},
+				{Name: "access_token", Value: authRefreshResponse.AccessToken, Duration: 7 * 24 * time.Hour},
+				{Name: "refresh_token", Value: authRefreshResponse.RefreshToken, Duration: 7 * 24 * time.Hour},
 			})
 
-			newClaims, err := jwtService.ValidateToken(refreshResponse.AccessToken)
+			newClaims, err := jwtService.ValidateToken(authRefreshResponse.AccessToken)
 			if err != nil {
 				c.JSON(http.StatusUnauthorized, gin.H{"error": "New access token is invalid"})
 				c.Abort()
