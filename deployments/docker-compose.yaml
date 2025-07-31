@@ -55,8 +55,6 @@ services:
       dockerfile: build/package/user.Dockerfile
     container_name: ${USER_SERVICE_CONTAINER}
     restart: unless-stopped
-    ports:
-      - "${USER_SERVICE_PORT}:${USER_SERVICE_PORT}"
     networks:
       - jwtgo
     depends_on:
