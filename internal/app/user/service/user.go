@@ -26,30 +26,31 @@ func NewUserService(
 	}
 }
 
-func (s *UserService) GetById(ctx context.Context, userIdDTO *dto.UserIdDTO) (*dto.UserDTO, customErr.BaseErrorIface) {
-	userEntity, err := s.userRepository.GetById(ctx, userIdDTO.Id)
-	if err != nil {
-		var notFoundErr *customErr.NotFoundError
-		if errors.As(err, &notFoundErr) {
-			return nil, nil
-		}
-		return nil, err
+func (s *UserService) handleError(err error) (*dto.UserDTO, customErr.BaseErrorIface) {
+	var notFoundErr *customErr.NotFoundError
+	if errors.As(err, &notFoundErr) {
+		return nil, nil
 	}
 
-	return mapper.MapUserEntityToUserDTO(userEntity), nil
+	return nil, err
+}
+
+func (s *UserService) GetById(ctx context.Context, userIdDTO *dto.UserIdDTO) (*dto.UserDTO, customErr.BaseErrorIface) {
+	foundUserEntity, err := s.userRepository.GetById(ctx, userIdDTO.Id)
+	if err != nil {
+		return s.handleError(err)
+	}
+
+	return mapper.MapUserEntityToUserDTO(foundUserEntity), nil
 }
 
 func (s *UserService) GetByEmail(ctx context.Context, userEmailDTO *dto.UserEmailDTO) (*dto.UserDTO, customErr.BaseErrorIface) {
-	userEntity, err := s.userRepository.GetByEmail(ctx, userEmailDTO.Email)
+	foundUserEntity, err := s.userRepository.GetByEmail(ctx, userEmailDTO.Email)
 	if err != nil {
-		var notFoundErr *customErr.NotFoundError
-		if errors.As(err, &notFoundErr) {
-			return nil, nil
-		}
-		return nil, err
+		return s.handleError(err)
 	}
 
-	return mapper.MapUserEntityToUserDTO(userEntity), nil
+	return mapper.MapUserEntityToUserDTO(foundUserEntity), nil
 }
 
 func (s *UserService) Create(ctx context.Context, userCreateDTO *dto.UserCreateDTO) (*dto.UserDTO, customErr.BaseErrorIface) {
@@ -57,7 +58,7 @@ func (s *UserService) Create(ctx context.Context, userCreateDTO *dto.UserCreateD
 
 	createdUserEntity, err := s.userRepository.Create(ctx, userEntity)
 	if err != nil {
-		return nil, err
+		return s.handleError(err)
 	}
 
 	return mapper.MapUserEntityToUserDTO(createdUserEntity), nil
@@ -68,17 +69,17 @@ func (s *UserService) Update(ctx context.Context, userUpdateDTO *dto.UserUpdateD
 
 	updatedUserEntity, err := s.userRepository.Update(ctx, userEntity.Id, userEntity)
 	if err != nil {
-		return nil, err
+		return s.handleError(err)
 	}
 
 	return mapper.MapUserEntityToUserDTO(updatedUserEntity), nil
 }
 
-func (s *UserService) Delete(ctx context.Context, userDeleteDTO *dto.UserIdDTO) (bool, customErr.BaseErrorIface) {
-	isUserDeleted, err := s.userRepository.Delete(ctx, userDeleteDTO.Id)
+func (s *UserService) Delete(ctx context.Context, userDeleteDTO *dto.UserDeleteDTO) (*dto.UserDTO, customErr.BaseErrorIface) {
+	deletedUserEntity, err := s.userRepository.Delete(ctx, userDeleteDTO.Id)
 	if err != nil {
-		return false, err
+		return s.handleError(err)
 	}
 
-	return isUserDeleted, nil
+	return mapper.MapUserEntityToUserDTO(deletedUserEntity), nil
 }

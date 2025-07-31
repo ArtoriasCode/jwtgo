@@ -41,3 +41,7 @@ type UserUpdateDTO struct {
 	Gender   string      `json:"gender"`
 	Security SecurityDTO `json:"security"`
 }
+
+type UserDeleteDTO struct {
+	Id string `json:"id"`
+}

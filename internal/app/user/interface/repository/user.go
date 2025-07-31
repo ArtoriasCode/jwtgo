@@ -13,5 +13,5 @@ type UserRepositoryIface interface {
 	GetAll(ctx context.Context) ([]*entity.User, customErr.BaseErrorIface)
 	Create(ctx context.Context, user *entity.User) (*entity.User, customErr.BaseErrorIface)
 	Update(ctx context.Context, id string, user *entity.User) (*entity.User, customErr.BaseErrorIface)
-	Delete(ctx context.Context, id string) (bool, customErr.BaseErrorIface)
+	Delete(ctx context.Context, id string) (*entity.User, customErr.BaseErrorIface)
 }

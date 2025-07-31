@@ -2,6 +2,7 @@ package v1
 
 import (
 	"context"
+
 	"google.golang.org/grpc/status"
 
 	"jwtgo/internal/app/user/controller/grpc/mapper"
@@ -39,7 +40,7 @@ func (s *UserServer) GetById(ctx context.Context, request *userPb.GetByIdRequest
 	}
 
 	if userDTO == nil {
-		return &userPb.GetByIdResponse{}, nil
+		return &userPb.GetByIdResponse{User: nil}, nil
 	}
 
 	return mapper.MapUserDTOToUserGetByIdResponse(userDTO), nil
@@ -54,7 +55,7 @@ func (s *UserServer) GetByEmail(ctx context.Context, request *userPb.GetByEmailR
 	}
 
 	if userDTO == nil {
-		return &userPb.GetByEmailResponse{}, nil
+		return &userPb.GetByEmailResponse{User: nil}, nil
 	}
 
 	return mapper.MapUserDTOToUserGetByEmailResponse(userDTO), nil
@@ -68,6 +69,10 @@ func (s *UserServer) Create(ctx context.Context, request *userPb.CreateRequest) 
 		return &userPb.CreateResponse{}, status.Errorf(s.errorService.ErrToGrpcCode(err), err.Error())
 	}
 
+	if userDTO == nil {
+		return &userPb.CreateResponse{User: nil}, nil
+	}
+
 	return mapper.MapUserDTOToUserCreateResponse(userDTO), nil
 }
 
@@ -79,16 +84,24 @@ func (s *UserServer) Update(ctx context.Context, request *userPb.UpdateRequest) 
 		return &userPb.UpdateResponse{}, status.Errorf(s.errorService.ErrToGrpcCode(err), err.Error())
 	}
 
+	if userDTO == nil {
+		return &userPb.UpdateResponse{User: nil}, nil
+	}
+
 	return mapper.MapUserDTOToUserUpdateResponse(userDTO), nil
 }
 
 func (s *UserServer) Delete(ctx context.Context, request *userPb.DeleteRequest) (*userPb.DeleteResponse, error) {
-	userIdDTO := mapper.MapUserDeleteRequestToUserIdDTO(request)
+	userDeleteDTO := mapper.MapUserDeleteRequestToUserDeleteDTO(request)
 
-	isDeleted, err := s.userService.Delete(ctx, userIdDTO)
+	userDTO, err := s.userService.Delete(ctx, userDeleteDTO)
 	if err != nil {
 		return &userPb.DeleteResponse{}, status.Errorf(s.errorService.ErrToGrpcCode(err), err.Error())
 	}
 
-	return mapper.MapStatusToDeleteResponse(isDeleted), nil
+	if userDTO == nil {
+		return &userPb.DeleteResponse{User: nil}, nil
+	}
+
+	return mapper.MapUserDTOToUserDeleteResponse(userDTO), nil
 }

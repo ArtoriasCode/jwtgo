@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	mongoEntity "jwtgo/internal/app/user/adapter/mongodb/entity"
 	"jwtgo/internal/app/user/adapter/mongodb/mapper"
@@ -108,14 +109,9 @@ func (ur *UserRepository) Create(ctx context.Context, domainUser *domainEntity.U
 		return nil, customErr.NewInternalServerError("Failed to create user")
 	}
 
-	var createdMongoUser mongoEntity.User
-	err = ur.collection.FindOne(ctx, bson.M{"_id": objID}).Decode(&createdMongoUser)
-	if err != nil {
-		ur.logger.Error("[UserRepository -> Create -> FindOne]: ", err)
-		return nil, customErr.NewInternalServerError("Failed to create user")
-	}
+	mongoUser.Id = objID
 
-	return mapper.MapMongoUserToDomainUser(&createdMongoUser), nil
+	return mapper.MapMongoUserToDomainUser(mongoUser), nil
 }
 
 func (ur *UserRepository) Update(ctx context.Context, id string, domainUser *domainEntity.User) (*domainEntity.User, customErr.BaseErrorIface) {
@@ -127,43 +123,43 @@ func (ur *UserRepository) Update(ctx context.Context, id string, domainUser *dom
 
 	domainUser.UpdatedAt = time.Now().Unix()
 	bsonUser := mapper.MapDomainUserToBsonUser(domainUser)
-
-	result, err := ur.collection.UpdateOne(ctx, bson.M{"_id": objID}, bson.M{"$set": bsonUser})
-	if err != nil {
-		ur.logger.Error("[UserRepository -> Update -> UpdateOne]: ", err)
-		return nil, customErr.NewInternalServerError("Failed to update user")
-	}
-
-	if result.MatchedCount == 0 {
-		return nil, customErr.NewNotFoundError("User not found")
-	}
+	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
 
 	var updatedMongoUser mongoEntity.User
-	err = ur.collection.FindOne(ctx, bson.M{"_id": objID}).Decode(&updatedMongoUser)
+	err = ur.collection.FindOneAndUpdate(
+		ctx,
+		bson.M{"_id": objID},
+		bson.M{"$set": bsonUser},
+		opts,
+	).Decode(&updatedMongoUser)
+
 	if err != nil {
-		ur.logger.Error("[UserRepository -> Update -> FindOne]: ", err)
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, customErr.NewNotFoundError("User not found")
+		}
+		ur.logger.Error("[UserRepository -> Update -> FindOneAndUpdate]: ", err)
 		return nil, customErr.NewInternalServerError("Failed to update user")
 	}
 
 	return mapper.MapMongoUserToDomainUser(&updatedMongoUser), nil
 }
 
-func (ur *UserRepository) Delete(ctx context.Context, id string) (bool, customErr.BaseErrorIface) {
+func (ur *UserRepository) Delete(ctx context.Context, id string) (*domainEntity.User, customErr.BaseErrorIface) {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		ur.logger.Error("[UserRepository -> Delete -> ObjectIDFromHex]: ", err)
-		return false, customErr.NewInternalServerError("Failed to delete user")
+		return nil, customErr.NewInternalServerError("Failed to delete user")
 	}
 
-	result, err := ur.collection.DeleteOne(ctx, bson.M{"_id": objID})
+	var deleted mongoEntity.User
+	err = ur.collection.FindOneAndDelete(ctx, bson.M{"_id": objID}).Decode(&deleted)
 	if err != nil {
-		ur.logger.Error("[UserRepository -> Delete -> DeleteOne]: ", err)
-		return false, customErr.NewInternalServerError("Failed to delete user")
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, customErr.NewNotFoundError("User not found")
+		}
+		ur.logger.Error("[UserRepository -> Delete -> FindOneAndDelete]: ", err)
+		return nil, customErr.NewInternalServerError("Failed to delete user")
 	}
 
-	if result.DeletedCount == 0 {
-		return false, customErr.NewNotFoundError("User not found")
-	}
-
-	return true, nil
+	return mapper.MapMongoUserToDomainUser(&deleted), nil
 }

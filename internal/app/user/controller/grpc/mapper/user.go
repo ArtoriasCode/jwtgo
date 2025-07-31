@@ -72,15 +72,15 @@ func MapUserDTOToUserUpdateResponse(dto *dto.UserDTO) *userPb.UpdateResponse {
 	}
 }
 
-func MapUserDeleteRequestToUserIdDTO(request *userPb.DeleteRequest) *dto.UserIdDTO {
-	return &dto.UserIdDTO{
+func MapUserDeleteRequestToUserDeleteDTO(request *userPb.DeleteRequest) *dto.UserDeleteDTO {
+	return &dto.UserDeleteDTO{
 		Id: request.Id,
 	}
 }
 
-func MapStatusToDeleteResponse(status bool) *userPb.DeleteResponse {
+func MapUserDTOToUserDeleteResponse(dto *dto.UserDTO) *userPb.DeleteResponse {
 	return &userPb.DeleteResponse{
-		Success: status,
+		User: MapUserDTOToUserProto(dto),
 	}
 }
 

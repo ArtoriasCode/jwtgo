@@ -75,5 +75,5 @@ message DeleteRequest {
 }
 
 message DeleteResponse {
-  bool success = 1;
+  User user = 1;
 }
