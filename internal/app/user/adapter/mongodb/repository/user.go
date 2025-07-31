@@ -42,6 +42,7 @@ func (ur *UserRepository) GetById(ctx context.Context, id string) (*domainEntity
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, customErr.NewNotFoundError("User not found")
 		}
+
 		ur.logger.Error("[UserRepository -> GetById -> FindOne]: ", err)
 		return nil, customErr.NewInternalServerError("Failed to get user by id")
 	}
@@ -57,6 +58,7 @@ func (ur *UserRepository) GetByEmail(ctx context.Context, email string) (*domain
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, customErr.NewNotFoundError("User not found")
 		}
+
 		ur.logger.Error("[UserRepository -> GetByEmail -> FindOne]: ", err)
 		return nil, customErr.NewInternalServerError("Failed to get user by email")
 	}
@@ -137,6 +139,7 @@ func (ur *UserRepository) Update(ctx context.Context, id string, domainUser *dom
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, customErr.NewNotFoundError("User not found")
 		}
+
 		ur.logger.Error("[UserRepository -> Update -> FindOneAndUpdate]: ", err)
 		return nil, customErr.NewInternalServerError("Failed to update user")
 	}
@@ -157,6 +160,7 @@ func (ur *UserRepository) Delete(ctx context.Context, id string) (*domainEntity.
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, customErr.NewNotFoundError("User not found")
 		}
+
 		ur.logger.Error("[UserRepository -> Delete -> FindOneAndDelete]: ", err)
 		return nil, customErr.NewInternalServerError("Failed to delete user")
 	}
