@@ -41,8 +41,8 @@ func NewAuthController(
 func (ac *AuthController) Register(apiGroup *gin.RouterGroup) {
 	authV1Group := apiGroup.Group("/v1/auth")
 
-	authV1Group.POST("/signup", middleware.Validator[dto.UserSignUpDTO](ac.requestValidator), ac.SignUp())
-	authV1Group.POST("/signin", middleware.Validator[dto.UserSignInDTO](ac.requestValidator), ac.SignIn())
+	authV1Group.POST("/signup", middleware.Validator[dto.SignUpRequestDTO](ac.requestValidator), ac.SignUp())
+	authV1Group.POST("/signin", middleware.Validator[dto.SignInRequestDTO](ac.requestValidator), ac.SignIn())
 	authV1Group.POST("/signout", ac.SignOut())
 	authV1Group.POST("/refresh", ac.Refresh())
 }
@@ -52,17 +52,17 @@ func (ac *AuthController) SignUp() gin.HandlerFunc {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		defer cancel()
 
-		userSignUpDTO := c.MustGet("validatedBody").(dto.UserSignUpDTO)
-		signUpRequest := mapper.MapUserSignUpDTOToAuthSignUpRequest(&userSignUpDTO)
+		signUpRequestDTO := c.MustGet("validatedBody").(dto.SignUpRequestDTO)
+		authSignUpRequest := mapper.MapSignUpRequestDTOToAuthSignUpRequest(&signUpRequestDTO)
 
-		signUpResponse, err := ac.authMicroService.SignUp(ctx, signUpRequest)
+		authSignUpResponse, err := ac.authMicroService.SignUp(ctx, authSignUpRequest)
 		if err != nil {
 			code, message := ac.errorService.GrpcCodeToHttpErr(err)
 			c.JSON(code, gin.H{"error": message})
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"message": signUpResponse.Message})
+		c.JSON(http.StatusOK, gin.H{"message": authSignUpResponse.Message})
 	}
 }
 
@@ -71,10 +71,10 @@ func (ac *AuthController) SignIn() gin.HandlerFunc {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		defer cancel()
 
-		userSignInDTO := c.MustGet("validatedBody").(dto.UserSignInDTO)
-		signInRequest := mapper.MapUserSignInDTOToAuthSignInRequest(&userSignInDTO)
+		signInRequestDTO := c.MustGet("validatedBody").(dto.SignInRequestDTO)
+		authSignInRequest := mapper.MapSignInRequestDTOToAuthSignInRequest(&signInRequestDTO)
 
-		signInResponse, err := ac.authMicroService.SignIn(ctx, signInRequest)
+		authSignInResponse, err := ac.authMicroService.SignIn(ctx, authSignInRequest)
 		if err != nil {
 			code, message := ac.errorService.GrpcCodeToHttpErr(err)
 			c.JSON(code, gin.H{"error": message})
@@ -82,11 +82,11 @@ func (ac *AuthController) SignIn() gin.HandlerFunc {
 		}
 
 		request.SetCookies(c, []schema.Cookie{
-			{Name: "access_token", Value: signInResponse.AccessToken, Duration: 7 * 24 * time.Hour},
-			{Name: "refresh_token", Value: signInResponse.RefreshToken, Duration: 7 * 24 * time.Hour},
+			{Name: "access_token", Value: authSignInResponse.AccessToken, Duration: 7 * 24 * time.Hour},
+			{Name: "refresh_token", Value: authSignInResponse.RefreshToken, Duration: 7 * 24 * time.Hour},
 		})
 
-		c.JSON(http.StatusOK, gin.H{"message": signInResponse.Message})
+		c.JSON(http.StatusOK, gin.H{"message": authSignInResponse.Message})
 	}
 }
 
@@ -101,9 +101,9 @@ func (ac *AuthController) SignOut() gin.HandlerFunc {
 			return
 		}
 
-		signOutRequest := mapper.MapAccessTokenToAuthRefreshRequest(accessToken)
+		authSignOutRequest := mapper.MapAccessTokenToAuthSignOutRequest(accessToken)
 
-		signOutResponse, err := ac.authMicroService.SignOut(ctx, signOutRequest)
+		authSignOutResponse, err := ac.authMicroService.SignOut(ctx, authSignOutRequest)
 		if err != nil {
 			code, message := ac.errorService.GrpcCodeToHttpErr(err)
 			c.JSON(code, gin.H{"error": message})
@@ -115,7 +115,7 @@ func (ac *AuthController) SignOut() gin.HandlerFunc {
 			{Name: "refresh_token", Value: "", Duration: 7 * 24 * time.Hour},
 		})
 
-		c.JSON(http.StatusOK, gin.H{"message": signOutResponse.Message})
+		c.JSON(http.StatusOK, gin.H{"message": authSignOutResponse.Message})
 	}
 }
 
@@ -130,9 +130,9 @@ func (ac *AuthController) Refresh() gin.HandlerFunc {
 			return
 		}
 
-		refreshRequest := mapper.MapRefreshTokenToAuthRefreshRequest(refreshToken)
+		authRefreshRequest := mapper.MapRefreshTokenToAuthRefreshRequest(refreshToken)
 
-		refreshResponse, err := ac.authMicroService.Refresh(ctx, refreshRequest)
+		authRefreshResponse, err := ac.authMicroService.Refresh(ctx, authRefreshRequest)
 		if err != nil {
 			code, message := ac.errorService.GrpcCodeToHttpErr(err)
 			c.JSON(code, gin.H{"error": message})
@@ -140,10 +140,10 @@ func (ac *AuthController) Refresh() gin.HandlerFunc {
 		}
 
 		request.SetCookies(c, []schema.Cookie{
-			{Name: "access_token", Value: refreshResponse.AccessToken, Duration: 7 * 24 * time.Hour},
-			{Name: "refresh_token", Value: refreshResponse.RefreshToken, Duration: 7 * 24 * time.Hour},
+			{Name: "access_token", Value: authRefreshResponse.AccessToken, Duration: 7 * 24 * time.Hour},
+			{Name: "refresh_token", Value: authRefreshResponse.RefreshToken, Duration: 7 * 24 * time.Hour},
 		})
 
-		c.JSON(http.StatusOK, gin.H{"message": refreshResponse.Message})
+		c.JSON(http.StatusOK, gin.H{"message": authRefreshResponse.Message})
 	}
 }
