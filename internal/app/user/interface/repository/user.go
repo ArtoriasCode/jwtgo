@@ -8,6 +8,7 @@ import (
 )
 
 type UserRepositoryIface interface {
+	PrepareDatabase(ctx context.Context) error
 	GetById(ctx context.Context, id string) (*entity.User, customErr.BaseErrorIface)
 	GetByEmail(ctx context.Context, email string) (*entity.User, customErr.BaseErrorIface)
 	GetAll(ctx context.Context) ([]*entity.User, customErr.BaseErrorIface)

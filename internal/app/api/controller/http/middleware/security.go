@@ -58,6 +58,7 @@ func Authentication(jwtService pkgServiceIface.JWTServiceIface, authMicroService
 
 		c.Set("id", claims.Id)
 		c.Set("role", claims.Role)
+		c.Set("username", claims.Username)
 		c.Next()
 	}
 }

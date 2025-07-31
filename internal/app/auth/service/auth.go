@@ -95,7 +95,12 @@ func (s *AuthService) SignIn(ctx context.Context, signInRequestDTO *dto.SignInRe
 		return nil, customErr.NewInvalidCredentialsError("Invalid login or password")
 	}
 
-	accessToken, refreshToken, err := s.jwtService.GenerateTokens(userGetByEmailResponse.User.Id, userGetByEmailResponse.User.Role)
+	accessToken, refreshToken, err := s.jwtService.GenerateTokens(
+		userGetByEmailResponse.User.Id,
+		userGetByEmailResponse.User.Role,
+		userGetByEmailResponse.User.Username,
+	)
+	
 	if err != nil {
 		s.logger.Error("[AuthService -> SignIn -> GenerateTokens]: ", err)
 		return nil, customErr.NewInternalServerError("Failed to sign in user")
@@ -167,7 +172,12 @@ func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserToke
 		return nil, customErr.NewInvalidTokenError("Invalid refresh token")
 	}
 
-	accessToken, refreshToken, err := s.jwtService.GenerateTokens(userGetByIdResponse.User.Id, userGetByIdResponse.User.Role)
+	accessToken, refreshToken, err := s.jwtService.GenerateTokens(
+		userGetByIdResponse.User.Id,
+		userGetByIdResponse.User.Role,
+		userGetByIdResponse.User.Username,
+	)
+
 	if err != nil {
 		s.logger.Error("[AuthService -> Refresh -> GenerateTokens]: ", err)
 		return nil, customErr.NewInternalServerError("Failed to refresh tokens")

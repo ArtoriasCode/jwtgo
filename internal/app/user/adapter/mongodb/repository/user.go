@@ -29,6 +29,25 @@ func NewUserRepository(client *mongo.Client, database, collection string, logger
 	}
 }
 
+func (ur *UserRepository) PrepareDatabase(ctx context.Context) error {
+	emailIndex := mongo.IndexModel{
+		Keys:    bson.D{{Key: "email", Value: 1}},
+		Options: options.Index().SetUnique(true).SetName("email_unique"),
+	}
+
+	usernameIndex := mongo.IndexModel{
+		Keys:    bson.D{{Key: "username", Value: 1}},
+		Options: options.Index().SetUnique(true).SetName("username_unique"),
+	}
+
+	_, err := ur.collection.Indexes().CreateMany(ctx, []mongo.IndexModel{emailIndex, usernameIndex})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (ur *UserRepository) GetById(ctx context.Context, id string) (*domainEntity.User, customErr.BaseErrorIface) {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -101,6 +120,10 @@ func (ur *UserRepository) Create(ctx context.Context, domainUser *domainEntity.U
 
 	result, err := ur.collection.InsertOne(ctx, mongoUser)
 	if err != nil {
+		if mongo.IsDuplicateKeyError(err) {
+			return nil, customErr.NewAlreadyExistsError("Email already exists")
+		}
+
 		ur.logger.Error("[UserRepository -> Create -> InsertOne]: ", err)
 		return nil, customErr.NewInternalServerError("Failed to create user")
 	}

@@ -27,18 +27,20 @@ func NewJWTService(secretKey string, accessLifetime, refreshLifetime int, logger
 	}
 }
 
-func (s *JWTService) GenerateTokens(id, role string) (string, string, customErr.BaseErrorIface) {
+func (s *JWTService) GenerateTokens(id, role, username string) (string, string, customErr.BaseErrorIface) {
 	accessClaims := &schema.Claims{
-		Id:   id,
-		Role: role,
+		Id:       id,
+		Role:     role,
+		Username: username,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(time.Minute * time.Duration(s.accessLifetime))),
 		},
 	}
 
 	refreshClaims := &schema.Claims{
-		Id:   id,
-		Role: role,
+		Id:       id,
+		Role:     role,
+		Username: username,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(time.Minute * time.Duration(s.refreshLifetime))),
 		},

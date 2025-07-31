@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"fmt"
 	"net"
 
@@ -12,6 +13,7 @@ import (
 	"jwtgo/internal/app/user/adapter/mongodb/repository"
 	"jwtgo/internal/app/user/config"
 	server "jwtgo/internal/app/user/controller/grpc/v1"
+	userRepositoryIface "jwtgo/internal/app/user/interface/repository"
 	userServiceIface "jwtgo/internal/app/user/interface/service"
 	userService "jwtgo/internal/app/user/service"
 	errorService "jwtgo/internal/pkg/error"
@@ -22,13 +24,14 @@ import (
 )
 
 type UserMicroService struct {
-	Config       *config.Config
-	Logger       *logging.Logger
-	Router       *gin.Engine
-	Validator    *validator.Validate
-	MongoClient  *mongo.Client
-	UserService  userServiceIface.UserServiceIface
-	ErrorService pkgServiceIface.ErrorServiceIface
+	Config         *config.Config
+	Logger         *logging.Logger
+	Router         *gin.Engine
+	Validator      *validator.Validate
+	MongoClient    *mongo.Client
+	UserRepository userRepositoryIface.UserRepositoryIface
+	UserService    userServiceIface.UserServiceIface
+	ErrorService   pkgServiceIface.ErrorServiceIface
 }
 
 func NewUserMicroService() *UserMicroService {
@@ -60,14 +63,27 @@ func (app *UserMicroService) InitializeClients() {
 	app.InitializeDatabaseClient()
 }
 
-func (app *UserMicroService) InitializeUserService() {
-	userRepository := repository.NewUserRepository(
+func (app *UserMicroService) InitializeUserRepository() {
+	app.UserRepository = repository.NewUserRepository(
 		app.MongoClient,
 		app.Config.MongoDB.Database,
 		"users",
 		app.Logger,
 	)
-	app.UserService = userService.NewUserService(userRepository, app.Logger)
+
+	ctx := context.Background()
+
+	if err := app.UserRepository.PrepareDatabase(ctx); err != nil {
+		app.Logger.Fatal("Failed to prepare user collection: ", err)
+	}
+}
+
+func (app *UserMicroService) InitializeUserRepositories() {
+	app.InitializeUserRepository()
+}
+
+func (app *UserMicroService) InitializeUserService() {
+	app.UserService = userService.NewUserService(app.UserRepository, app.Logger)
 }
 
 func (app *UserMicroService) InitializeErrorService() {
@@ -82,6 +98,7 @@ func (app *UserMicroService) InitializeServices() {
 func (app *UserMicroService) Initialize() {
 	app.InitializeConfig()
 	app.InitializeClients()
+	app.InitializeUserRepositories()
 	app.InitializeServices()
 }
 
