@@ -4,10 +4,11 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
-	customErr "jwtgo/internal/pkg/error/type"
-	"jwtgo/pkg/logging"
 
 	"golang.org/x/crypto/bcrypt"
+
+	customErr "jwtgo/internal/pkg/error/type"
+	"jwtgo/pkg/logging"
 )
 
 type PasswordService struct {

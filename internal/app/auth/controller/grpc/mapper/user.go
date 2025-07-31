@@ -13,8 +13,8 @@ func MapTokensToUserTokensDTO(accessToken, refreshToken string) *dto.UserTokensD
 	}
 }
 
-func MapAuthSignUpRequestToUserSignUpDTO(request *authPb.SignUpRequest) *dto.UserSignUpDTO {
-	return &dto.UserSignUpDTO{
+func MapAuthSignUpRequestToSignUpRequestDTO(request *authPb.SignUpRequest) *dto.SignUpRequestDTO {
+	return &dto.SignUpRequestDTO{
 		Email:    request.Email,
 		Password: request.Password,
 		Role:     request.Role,
@@ -23,8 +23,8 @@ func MapAuthSignUpRequestToUserSignUpDTO(request *authPb.SignUpRequest) *dto.Use
 	}
 }
 
-func MapAuthSignInRequestToUserSignInDTO(request *authPb.SignInRequest) *dto.UserSignInDTO {
-	return &dto.UserSignInDTO{
+func MapAuthSignInRequestToSignInRequestDTO(request *authPb.SignInRequest) *dto.SignInRequestDTO {
+	return &dto.SignInRequestDTO{
 		Email:    request.Email,
 		Password: request.Password,
 	}
@@ -70,7 +70,7 @@ func MapEmailToUserGetByEmailRequest(email string) *userPb.GetByEmailRequest {
 	}
 }
 
-func MapUserSignUpDTOToUserCreateRequest(dto *dto.UserSignUpDTO) *userPb.CreateRequest {
+func MapSignUpRequestDTOToUserCreateRequest(dto *dto.SignUpRequestDTO) *userPb.CreateRequest {
 	return &userPb.CreateRequest{
 		Email:    dto.Email,
 		Role:     dto.Role,

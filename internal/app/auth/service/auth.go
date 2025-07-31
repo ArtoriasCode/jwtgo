@@ -33,16 +33,16 @@ func NewAuthService(
 	}
 }
 
-func (s *AuthService) SignUp(ctx context.Context, userSignUpDTO *dto.UserSignUpDTO) (bool, customErr.BaseErrorIface) {
-	getByEmailRequest := mapper.MapEmailToUserGetByEmailRequest(userSignUpDTO.Email)
+func (s *AuthService) SignUp(ctx context.Context, signUpRequestDTO *dto.SignUpRequestDTO) (bool, customErr.BaseErrorIface) {
+	userGetByEmailRequest := mapper.MapEmailToUserGetByEmailRequest(signUpRequestDTO.Email)
 
-	getByEmailResponse, err := s.userMicroService.GetByEmail(ctx, getByEmailRequest)
+	userGetByEmailResponse, err := s.userMicroService.GetByEmail(ctx, userGetByEmailRequest)
 	if err != nil {
 		s.logger.Error("[AuthService -> SignUp -> GetByEmail]: ", err)
 		return false, customErr.NewInternalServerError("Failed to create user")
 	}
 
-	if getByEmailResponse.User != nil {
+	if userGetByEmailResponse.User != nil {
 		return false, customErr.NewAlreadyExistsError("Email already exists")
 	}
 
@@ -52,18 +52,18 @@ func (s *AuthService) SignUp(ctx context.Context, userSignUpDTO *dto.UserSignUpD
 		return false, customErr.NewInternalServerError("Failed to create user")
 	}
 
-	hashedPassword, err := s.passwordService.HashPassword(userSignUpDTO.Password, localSalt)
+	hashedPassword, err := s.passwordService.HashPassword(signUpRequestDTO.Password, localSalt)
 	if err != nil {
 		s.logger.Error("[AuthService -> SignUp -> HashPassword]: ", err)
 		return false, customErr.NewInternalServerError("Failed to create user")
 	}
 
-	userSignUpDTO.Password = hashedPassword
+	signUpRequestDTO.Password = hashedPassword
 
-	createRequest := mapper.MapUserSignUpDTOToUserCreateRequest(userSignUpDTO)
-	createRequest.Security.Salt = localSalt
+	userCreateRequest := mapper.MapSignUpRequestDTOToUserCreateRequest(signUpRequestDTO)
+	userCreateRequest.Security.Salt = localSalt
 
-	_, err = s.userMicroService.Create(ctx, createRequest)
+	_, err = s.userMicroService.Create(ctx, userCreateRequest)
 	if err != nil {
 		s.logger.Error("[AuthService -> SignUp -> Create]: ", err)
 		return false, customErr.NewInternalServerError("Failed to create user")
@@ -72,37 +72,37 @@ func (s *AuthService) SignUp(ctx context.Context, userSignUpDTO *dto.UserSignUpD
 	return true, nil
 }
 
-func (s *AuthService) SignIn(ctx context.Context, userSignInDTO *dto.UserSignInDTO) (*dto.UserTokensDTO, customErr.BaseErrorIface) {
-	getByEmailRequest := mapper.MapEmailToUserGetByEmailRequest(userSignInDTO.Email)
+func (s *AuthService) SignIn(ctx context.Context, signInRequestDTO *dto.SignInRequestDTO) (*dto.UserTokensDTO, customErr.BaseErrorIface) {
+	userGetByEmailRequest := mapper.MapEmailToUserGetByEmailRequest(signInRequestDTO.Email)
 
-	getByEmailResponse, err := s.userMicroService.GetByEmail(ctx, getByEmailRequest)
+	userGetByEmailResponse, err := s.userMicroService.GetByEmail(ctx, userGetByEmailRequest)
 	if err != nil {
 		s.logger.Error("[AuthService -> SignIn -> GetByEmail]: ", err)
 		return nil, customErr.NewInternalServerError("Failed to sign in user")
 	}
 
-	if getByEmailResponse.User == nil {
+	if userGetByEmailResponse.User == nil {
 		return nil, customErr.NewInvalidCredentialsError("Invalid login or password")
 	}
 
 	passwordIsValid := s.passwordService.VerifyPassword(
-		userSignInDTO.Password,
-		getByEmailResponse.User.Security.Password,
-		getByEmailResponse.User.Security.Salt,
+		signInRequestDTO.Password,
+		userGetByEmailResponse.User.Security.Password,
+		userGetByEmailResponse.User.Security.Salt,
 	)
 
 	if !passwordIsValid {
 		return nil, customErr.NewInvalidCredentialsError("Invalid login or password")
 	}
 
-	accessToken, refreshToken, err := s.jwtService.GenerateTokens(getByEmailResponse.User.Id, getByEmailResponse.User.Role)
+	accessToken, refreshToken, err := s.jwtService.GenerateTokens(userGetByEmailResponse.User.Id, userGetByEmailResponse.User.Role)
 	if err != nil {
 		s.logger.Error("[AuthService -> SignIn -> GenerateTokens]: ", err)
 		return nil, customErr.NewInternalServerError("Failed to sign in user")
 	}
 
-	getByEmailResponse.User.Security.RefreshToken = refreshToken
-	updateRequest := mapper.MapUserGetByEmailResponseToUserUpdateRequest(getByEmailResponse)
+	userGetByEmailResponse.User.Security.RefreshToken = refreshToken
+	updateRequest := mapper.MapUserGetByEmailResponseToUserUpdateRequest(userGetByEmailResponse)
 
 	_, err = s.userMicroService.Update(ctx, updateRequest)
 	if err != nil {
@@ -119,24 +119,24 @@ func (s *AuthService) SignOut(ctx context.Context, refreshTokenDTO *dto.UserToke
 		return false, err
 	}
 
-	getByIdRequest := mapper.MapIdToUserGetByIdRequest(claims.Id)
+	userGetByIdRequest := mapper.MapIdToUserGetByIdRequest(claims.Id)
 
-	getByIdResponse, err := s.userMicroService.GetById(ctx, getByIdRequest)
+	userGetByIdResponse, err := s.userMicroService.GetById(ctx, userGetByIdRequest)
 	if err != nil {
 		s.logger.Error("[AuthService -> SignOut -> GetById]: ", err)
 		return false, customErr.NewInternalServerError("Failed to sign out user")
 	}
 
-	if getByIdResponse.User == nil {
+	if userGetByIdResponse.User == nil {
 		return false, customErr.NewNotFoundError("User not found")
 	}
 
-	getByIdResponse.User.Security.RefreshToken = ""
-	getByIdResponse.User.Id = claims.Id
+	userGetByIdResponse.User.Security.RefreshToken = ""
+	userGetByIdResponse.User.Id = claims.Id
 
-	updateRequest := mapper.MapUserGetByIdResponseToUserUpdateRequest(getByIdResponse)
+	userUpdateRequest := mapper.MapUserGetByIdResponseToUserUpdateRequest(userGetByIdResponse)
 
-	_, err = s.userMicroService.Update(ctx, updateRequest)
+	_, err = s.userMicroService.Update(ctx, userUpdateRequest)
 	if err != nil {
 		s.logger.Error("[AuthService -> SignOut -> Update]: ", err)
 		return false, customErr.NewInternalServerError("Failed to sign out user")
@@ -151,34 +151,34 @@ func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserToke
 		return nil, err
 	}
 
-	getByIdRequest := mapper.MapIdToUserGetByIdRequest(claims.Id)
+	userGetByIdRequest := mapper.MapIdToUserGetByIdRequest(claims.Id)
 
-	getByIdResponse, err := s.userMicroService.GetById(ctx, getByIdRequest)
+	userGetByIdResponse, err := s.userMicroService.GetById(ctx, userGetByIdRequest)
 	if err != nil {
 		s.logger.Error("[AuthService -> Refresh -> GetById]: ", err)
 		return nil, customErr.NewInternalServerError("Failed to refresh tokens")
 	}
 
-	if getByIdResponse.User == nil {
+	if userGetByIdResponse.User == nil {
 		return nil, customErr.NewNotFoundError("User not found")
 	}
 
-	if refreshTokenDTO.Token != getByIdResponse.User.Security.RefreshToken {
+	if refreshTokenDTO.Token != userGetByIdResponse.User.Security.RefreshToken {
 		return nil, customErr.NewInvalidTokenError("Invalid refresh token")
 	}
 
-	accessToken, refreshToken, err := s.jwtService.GenerateTokens(getByIdResponse.User.Id, getByIdResponse.User.Role)
+	accessToken, refreshToken, err := s.jwtService.GenerateTokens(userGetByIdResponse.User.Id, userGetByIdResponse.User.Role)
 	if err != nil {
 		s.logger.Error("[AuthService -> Refresh -> GenerateTokens]: ", err)
 		return nil, customErr.NewInternalServerError("Failed to refresh tokens")
 	}
 
-	getByIdResponse.User.Security.RefreshToken = refreshToken
-	getByIdResponse.User.Id = claims.Id
+	userGetByIdResponse.User.Security.RefreshToken = refreshToken
+	userGetByIdResponse.User.Id = claims.Id
 
-	updateRequest := mapper.MapUserGetByIdResponseToUserUpdateRequest(getByIdResponse)
+	userUpdateRequest := mapper.MapUserGetByIdResponseToUserUpdateRequest(userGetByIdResponse)
 
-	_, err = s.userMicroService.Update(ctx, updateRequest)
+	_, err = s.userMicroService.Update(ctx, userUpdateRequest)
 	if err != nil {
 		s.logger.Error("[AuthService -> Refresh -> Update]: ", err)
 		return nil, customErr.NewInternalServerError("Failed to refresh tokens")
