@@ -17,6 +17,11 @@ import (
 	"jwtgo/pkg/logging"
 )
 
+const (
+	Day  = 24 * time.Hour
+	Week = 7 * Day
+)
+
 type AuthController struct {
 	authMicroService authPb.AuthServiceClient
 	errorService     pkgServiceIface.ErrorServiceIface
@@ -82,8 +87,8 @@ func (ac *AuthController) SignIn() gin.HandlerFunc {
 		}
 
 		request.SetCookies(c, []schema.Cookie{
-			{Name: "access_token", Value: authSignInResponse.AccessToken, Duration: 7 * 24 * time.Hour},
-			{Name: "refresh_token", Value: authSignInResponse.RefreshToken, Duration: 7 * 24 * time.Hour},
+			{Name: "access_token", Value: authSignInResponse.AccessToken, Duration: Week},
+			{Name: "refresh_token", Value: authSignInResponse.RefreshToken, Duration: Week},
 		})
 
 		c.JSON(http.StatusOK, gin.H{"message": authSignInResponse.Message})
@@ -111,8 +116,8 @@ func (ac *AuthController) SignOut() gin.HandlerFunc {
 		}
 
 		request.SetCookies(c, []schema.Cookie{
-			{Name: "access_token", Value: "", Duration: 7 * 24 * time.Hour},
-			{Name: "refresh_token", Value: "", Duration: 7 * 24 * time.Hour},
+			{Name: "access_token", Value: "", Duration: Week},
+			{Name: "refresh_token", Value: "", Duration: Week},
 		})
 
 		c.JSON(http.StatusOK, gin.H{"message": authSignOutResponse.Message})
@@ -140,8 +145,8 @@ func (ac *AuthController) Refresh() gin.HandlerFunc {
 		}
 
 		request.SetCookies(c, []schema.Cookie{
-			{Name: "access_token", Value: authRefreshResponse.AccessToken, Duration: 7 * 24 * time.Hour},
-			{Name: "refresh_token", Value: authRefreshResponse.RefreshToken, Duration: 7 * 24 * time.Hour},
+			{Name: "access_token", Value: authRefreshResponse.AccessToken, Duration: Week},
+			{Name: "refresh_token", Value: authRefreshResponse.RefreshToken, Duration: Week},
 		})
 
 		c.JSON(http.StatusOK, gin.H{"message": authRefreshResponse.Message})
