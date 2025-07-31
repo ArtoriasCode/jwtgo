@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -71,7 +72,8 @@ func (app *UserMicroService) InitializeUserRepository() {
 		app.Logger,
 	)
 
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
 
 	if err := app.UserRepository.PrepareDatabase(ctx); err != nil {
 		app.Logger.Fatal("Failed to prepare user collection: ", err)
