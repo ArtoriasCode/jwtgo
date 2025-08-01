@@ -43,13 +43,18 @@ func NewAuthController(
 	}
 }
 
-func (ac *AuthController) Register(apiGroup *gin.RouterGroup) {
+func (ac *AuthController) RegisterNoAuth(apiGroup *gin.RouterGroup) {
 	authV1Group := apiGroup.Group("/v1/auth")
 
 	authV1Group.POST("/signup", middleware.Validator[dto.SignUpRequestDTO](ac.requestValidator), ac.SignUp())
 	authV1Group.POST("/signin", middleware.Validator[dto.SignInRequestDTO](ac.requestValidator), ac.SignIn())
-	authV1Group.POST("/signout", ac.SignOut())
 	authV1Group.POST("/refresh", ac.Refresh())
+}
+
+func (ac *AuthController) RegisterWithAuth(apiGroup *gin.RouterGroup) {
+	authV1Group := apiGroup.Group("/v1/auth")
+
+	authV1Group.POST("/signout", ac.SignOut())
 }
 
 func (ac *AuthController) SignUp() gin.HandlerFunc {
@@ -100,13 +105,8 @@ func (ac *AuthController) SignOut() gin.HandlerFunc {
 		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
 		defer cancel()
 
-		accessToken, err := c.Cookie("access_token")
-		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid access token"})
-			return
-		}
-
-		authSignOutRequest := mapper.MapAccessTokenToAuthSignOutRequest(accessToken)
+		id := c.MustGet("id").(string)
+		authSignOutRequest := mapper.MapAccessTokenToAuthSignOutRequest(id)
 
 		authSignOutResponse, err := ac.authMicroService.SignOut(ctx, authSignOutRequest)
 		if err != nil {
@@ -130,7 +130,7 @@ func (ac *AuthController) Refresh() gin.HandlerFunc {
 		defer cancel()
 
 		refreshToken, err := c.Cookie("refresh_token")
-		if err != nil {
+		if err != nil || refreshToken == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid refresh token"})
 			return
 		}

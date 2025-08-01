@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-
 	"jwtgo/internal/app/auth/controller/grpc/dto"
 	"jwtgo/internal/app/auth/controller/grpc/mapper"
 	authServiceIface "jwtgo/internal/app/auth/interface/service"
@@ -100,7 +99,7 @@ func (s *AuthService) SignIn(ctx context.Context, signInRequestDTO *dto.SignInRe
 		userGetByEmailResponse.User.Role,
 		userGetByEmailResponse.User.Username,
 	)
-	
+
 	if err != nil {
 		s.logger.Error("[AuthService -> SignIn -> GenerateTokens]: ", err)
 		return nil, customErr.NewInternalServerError("Failed to sign in user")
@@ -118,13 +117,8 @@ func (s *AuthService) SignIn(ctx context.Context, signInRequestDTO *dto.SignInRe
 	return mapper.MapTokensToUserTokensDTO(accessToken, refreshToken), nil
 }
 
-func (s *AuthService) SignOut(ctx context.Context, refreshTokenDTO *dto.UserTokenDTO) (bool, customErr.BaseErrorIface) {
-	claims, err := s.jwtService.ValidateToken(refreshTokenDTO.Token)
-	if err != nil {
-		return false, err
-	}
-
-	userGetByIdRequest := mapper.MapIdToUserGetByIdRequest(claims.Id)
+func (s *AuthService) SignOut(ctx context.Context, signOutRequestDTO *dto.SignOutRequestDTO) (bool, customErr.BaseErrorIface) {
+	userGetByIdRequest := mapper.MapIdToUserGetByIdRequest(signOutRequestDTO.Id)
 
 	userGetByIdResponse, err := s.userMicroService.GetById(ctx, userGetByIdRequest)
 	if err != nil {
@@ -136,9 +130,11 @@ func (s *AuthService) SignOut(ctx context.Context, refreshTokenDTO *dto.UserToke
 		return false, customErr.NewNotFoundError("User not found")
 	}
 
-	userGetByIdResponse.User.Security.RefreshToken = ""
-	userGetByIdResponse.User.Id = claims.Id
+	if userGetByIdResponse.User.Security.RefreshToken == "" {
+		return true, nil
+	}
 
+	userGetByIdResponse.User.Security.RefreshToken = ""
 	userUpdateRequest := mapper.MapUserGetByIdResponseToUserUpdateRequest(userGetByIdResponse)
 
 	_, err = s.userMicroService.Update(ctx, userUpdateRequest)
@@ -184,8 +180,6 @@ func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserToke
 	}
 
 	userGetByIdResponse.User.Security.RefreshToken = refreshToken
-	userGetByIdResponse.User.Id = claims.Id
-
 	userUpdateRequest := mapper.MapUserGetByIdResponseToUserUpdateRequest(userGetByIdResponse)
 
 	_, err = s.userMicroService.Update(ctx, userUpdateRequest)

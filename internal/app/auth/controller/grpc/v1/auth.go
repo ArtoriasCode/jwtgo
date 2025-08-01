@@ -54,9 +54,9 @@ func (s *AuthServer) SignIn(ctx context.Context, request *authPb.SignInRequest) 
 }
 
 func (s *AuthServer) SignOut(ctx context.Context, request *authPb.SignOutRequest) (*authPb.SignOutResponse, error) {
-	userAccessTokenDTO := mapper.MapAuthSignOutRequestToUserTokenDTO(request)
+	signOutRequestDTO := mapper.MapAuthSignOutRequestToSignOutRequestDTO(request)
 
-	_, err := s.authService.SignOut(ctx, userAccessTokenDTO)
+	_, err := s.authService.SignOut(ctx, signOutRequestDTO)
 	if err != nil {
 		return &authPb.SignOutResponse{}, status.Errorf(s.errorService.ErrToGrpcCode(err), err.Error())
 	}

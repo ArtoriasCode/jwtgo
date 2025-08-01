@@ -38,9 +38,9 @@ func MapUserTokensDTOToAuthSignInResponse(dto *dto.UserTokensDTO, message string
 	}
 }
 
-func MapAuthSignOutRequestToUserTokenDTO(request *authPb.SignOutRequest) *dto.UserTokenDTO {
-	return &dto.UserTokenDTO{
-		Token: request.AccessToken,
+func MapAuthSignOutRequestToSignOutRequestDTO(request *authPb.SignOutRequest) *dto.SignOutRequestDTO {
+	return &dto.SignOutRequestDTO{
+		Id: request.Id,
 	}
 }
 

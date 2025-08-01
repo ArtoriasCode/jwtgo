@@ -255,7 +255,7 @@ func (x *SignInResponse) GetMessage() string {
 
 type SignOutRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -290,9 +290,9 @@ func (*SignOutRequest) Descriptor() ([]byte, []int) {
 	return file_proto_auth_auth_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *SignOutRequest) GetAccessToken() string {
+func (x *SignOutRequest) GetId() string {
 	if x != nil {
-		return x.AccessToken
+		return x.Id
 	}
 	return ""
 }
@@ -464,9 +464,9 @@ const file_proto_auth_auth_proto_rawDesc = "" +
 	"\x0eSignInResponse\x12!\n" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12#\n" +
 	"\rrefresh_token\x18\x02 \x01(\tR\frefreshToken\x12\x18\n" +
-	"\amessage\x18\x03 \x01(\tR\amessage\"3\n" +
-	"\x0eSignOutRequest\x12!\n" +
-	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\"+\n" +
+	"\amessage\x18\x03 \x01(\tR\amessage\" \n" +
+	"\x0eSignOutRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"+\n" +
 	"\x0fSignOutResponse\x12\x18\n" +
 	"\amessage\x18\x01 \x01(\tR\amessage\"5\n" +
 	"\x0eRefreshRequest\x12#\n" +

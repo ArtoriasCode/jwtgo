@@ -22,9 +22,9 @@ func MapSignInRequestDTOToAuthSignInRequest(dto *dto.SignInRequestDTO) *authPb.S
 	}
 }
 
-func MapAccessTokenToAuthSignOutRequest(accessToken string) *authPb.SignOutRequest {
+func MapAccessTokenToAuthSignOutRequest(id string) *authPb.SignOutRequest {
 	return &authPb.SignOutRequest{
-		AccessToken: accessToken,
+		Id: id,
 	}
 }
 

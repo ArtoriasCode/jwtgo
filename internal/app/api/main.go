@@ -95,12 +95,13 @@ func (app *ApiGateway) InitializeRouter() {
 }
 
 func (app *ApiGateway) InitializeControllers() {
-	apiGroup := app.Router.Group("/api")
-
 	authController := v1.NewAuthController(app.AuthServiceClient, app.ErrorService, app.ValidatorClient, app.Logger)
-	authController.Register(apiGroup)
 
-	app.Router.Use(middleware.Authentication(app.JWTService, app.AuthServiceClient))
+	noAuthApiGroup := app.Router.Group("/api")
+	authController.RegisterNoAuth(noAuthApiGroup)
+
+	withAuthApiGroup := app.Router.Group("/api", middleware.Authentication(app.JWTService))
+	authController.RegisterWithAuth(withAuthApiGroup)
 }
 
 func (app *ApiGateway) Initialize() {
