@@ -7,11 +7,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+
 	"jwtgo/internal/app/api/controller/http/dto"
 	"jwtgo/internal/app/api/controller/http/mapper"
 	"jwtgo/internal/app/api/controller/http/middleware"
+	apiServiceIface "jwtgo/internal/app/api/interface/service"
 	pkgServiceIface "jwtgo/internal/pkg/interface/service"
-	authPb "jwtgo/internal/pkg/proto/auth"
 	"jwtgo/internal/pkg/request"
 	"jwtgo/internal/pkg/request/schema"
 	"jwtgo/pkg/logging"
@@ -23,20 +24,20 @@ const (
 )
 
 type AuthController struct {
-	authMicroService authPb.AuthServiceClient
+	authService      apiServiceIface.AuthServiceIface
 	errorService     pkgServiceIface.ErrorServiceIface
 	requestValidator *validator.Validate
 	logger           *logging.Logger
 }
 
 func NewAuthController(
-	authMicroService authPb.AuthServiceClient,
+	authService apiServiceIface.AuthServiceIface,
 	errorService pkgServiceIface.ErrorServiceIface,
 	requestValidator *validator.Validate,
 	logger *logging.Logger,
 ) *AuthController {
 	return &AuthController{
-		authMicroService: authMicroService,
+		authService:      authService,
 		errorService:     errorService,
 		requestValidator: requestValidator,
 		logger:           logger,
@@ -63,16 +64,15 @@ func (ac *AuthController) SignUp() gin.HandlerFunc {
 		defer cancel()
 
 		signUpRequestDTO := c.MustGet("validatedBody").(dto.SignUpRequestDTO)
-		authSignUpRequest := mapper.MapSignUpRequestDTOToAuthSignUpRequest(&signUpRequestDTO)
 
-		authSignUpResponse, err := ac.authMicroService.SignUp(ctx, authSignUpRequest)
+		authSignUpResponseDTO, err := ac.authService.SignUp(ctx, &signUpRequestDTO)
 		if err != nil {
 			code, message := ac.errorService.GrpcCodeToHttpErr(err)
 			c.JSON(code, gin.H{"error": message})
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"message": authSignUpResponse.Message})
+		c.JSON(http.StatusOK, gin.H{"message": authSignUpResponseDTO.Message})
 	}
 }
 
@@ -82,9 +82,8 @@ func (ac *AuthController) SignIn() gin.HandlerFunc {
 		defer cancel()
 
 		signInRequestDTO := c.MustGet("validatedBody").(dto.SignInRequestDTO)
-		authSignInRequest := mapper.MapSignInRequestDTOToAuthSignInRequest(&signInRequestDTO)
 
-		authSignInResponse, err := ac.authMicroService.SignIn(ctx, authSignInRequest)
+		authSignInResponseDTO, err := ac.authService.SignIn(ctx, &signInRequestDTO)
 		if err != nil {
 			code, message := ac.errorService.GrpcCodeToHttpErr(err)
 			c.JSON(code, gin.H{"error": message})
@@ -92,11 +91,11 @@ func (ac *AuthController) SignIn() gin.HandlerFunc {
 		}
 
 		request.SetCookies(c, []schema.Cookie{
-			{Name: "access_token", Value: authSignInResponse.AccessToken, Duration: Week},
-			{Name: "refresh_token", Value: authSignInResponse.RefreshToken, Duration: Week},
+			{Name: "access_token", Value: authSignInResponseDTO.AccessToken, Duration: Week},
+			{Name: "refresh_token", Value: authSignInResponseDTO.RefreshToken, Duration: Week},
 		})
 
-		c.JSON(http.StatusOK, gin.H{"message": authSignInResponse.Message})
+		c.JSON(http.StatusOK, gin.H{"message": authSignInResponseDTO.Message})
 	}
 }
 
@@ -106,9 +105,9 @@ func (ac *AuthController) SignOut() gin.HandlerFunc {
 		defer cancel()
 
 		id := c.MustGet("id").(string)
-		authSignOutRequest := mapper.MapAccessTokenToAuthSignOutRequest(id)
+		signOutRequestDTO := mapper.MapUserIdToSignOutRequestDTO(id)
 
-		authSignOutResponse, err := ac.authMicroService.SignOut(ctx, authSignOutRequest)
+		authSignOutResponseDTO, err := ac.authService.SignOut(ctx, signOutRequestDTO)
 		if err != nil {
 			code, message := ac.errorService.GrpcCodeToHttpErr(err)
 			c.JSON(code, gin.H{"error": message})
@@ -120,7 +119,7 @@ func (ac *AuthController) SignOut() gin.HandlerFunc {
 			{Name: "refresh_token", Value: "", Duration: Week},
 		})
 
-		c.JSON(http.StatusOK, gin.H{"message": authSignOutResponse.Message})
+		c.JSON(http.StatusOK, gin.H{"message": authSignOutResponseDTO.Message})
 	}
 }
 
@@ -135,9 +134,9 @@ func (ac *AuthController) Refresh() gin.HandlerFunc {
 			return
 		}
 
-		authRefreshRequest := mapper.MapRefreshTokenToAuthRefreshRequest(refreshToken)
+		refreshRequestDTO := mapper.MapRefreshTokenToRefreshRequestDTO(refreshToken)
 
-		authRefreshResponse, err := ac.authMicroService.Refresh(ctx, authRefreshRequest)
+		authRefreshResponseDTO, err := ac.authService.Refresh(ctx, refreshRequestDTO)
 		if err != nil {
 			code, message := ac.errorService.GrpcCodeToHttpErr(err)
 			c.JSON(code, gin.H{"error": message})
@@ -145,10 +144,10 @@ func (ac *AuthController) Refresh() gin.HandlerFunc {
 		}
 
 		request.SetCookies(c, []schema.Cookie{
-			{Name: "access_token", Value: authRefreshResponse.AccessToken, Duration: Week},
-			{Name: "refresh_token", Value: authRefreshResponse.RefreshToken, Duration: Week},
+			{Name: "access_token", Value: authRefreshResponseDTO.AccessToken, Duration: Week},
+			{Name: "refresh_token", Value: authRefreshResponseDTO.RefreshToken, Duration: Week},
 		})
 
-		c.JSON(http.StatusOK, gin.H{"message": authRefreshResponse.Message})
+		c.JSON(http.StatusOK, gin.H{"message": authRefreshResponseDTO.Message})
 	}
 }

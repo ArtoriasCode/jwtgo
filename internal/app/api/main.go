@@ -9,6 +9,8 @@ import (
 	"jwtgo/internal/app/api/config"
 	"jwtgo/internal/app/api/controller/http/middleware"
 	"jwtgo/internal/app/api/controller/http/v1"
+	apiServiceIface "jwtgo/internal/app/api/interface/service"
+	apiService "jwtgo/internal/app/api/service"
 	errorService "jwtgo/internal/pkg/error"
 	pkgServiceIface "jwtgo/internal/pkg/interface/service"
 	jwtService "jwtgo/internal/pkg/jwt"
@@ -22,6 +24,7 @@ type ApiGateway struct {
 	Router            *gin.Engine
 	JWTService        pkgServiceIface.JWTServiceIface
 	ErrorService      pkgServiceIface.ErrorServiceIface
+	AuthService       apiServiceIface.AuthServiceIface
 	ValidatorClient   *validator.Validate
 	AuthServiceClient authPb.AuthServiceClient
 }
@@ -74,9 +77,17 @@ func (app *ApiGateway) InitializeErrorService() {
 	app.ErrorService = errorService.NewErrorService()
 }
 
+func (app *ApiGateway) InitializeAuthService() {
+	app.AuthService = apiService.NewAuthService(
+		app.AuthServiceClient,
+		app.Logger,
+	)
+}
+
 func (app *ApiGateway) InitializeServices() {
 	app.InitializeErrorService()
 	app.InitializeJWTService()
+	app.InitializeAuthService()
 }
 
 func (app *ApiGateway) SetGinMode() {
@@ -95,7 +106,7 @@ func (app *ApiGateway) InitializeRouter() {
 }
 
 func (app *ApiGateway) InitializeControllers() {
-	authController := v1.NewAuthController(app.AuthServiceClient, app.ErrorService, app.ValidatorClient, app.Logger)
+	authController := v1.NewAuthController(app.AuthService, app.ErrorService, app.ValidatorClient, app.Logger)
 
 	noAuthApiGroup := app.Router.Group("/api")
 	authController.RegisterNoAuth(noAuthApiGroup)
