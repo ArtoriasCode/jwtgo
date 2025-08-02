@@ -32,29 +32,29 @@ func NewAuthService(
 	}
 }
 
-func (s *AuthService) SignUp(ctx context.Context, signUpRequestDTO *dto.SignUpRequestDTO) (bool, customErr.BaseErrorIface) {
+func (s *AuthService) SignUp(ctx context.Context, signUpRequestDTO *dto.SignUpRequestDTO) (*dto.SignUpResponseDTO, customErr.BaseErrorIface) {
 	userGetByEmailRequest := mapper.MapEmailToUserGetByEmailRequest(signUpRequestDTO.Email)
 
 	userGetByEmailResponse, err := s.userMicroService.GetByEmail(ctx, userGetByEmailRequest)
 	if err != nil {
 		s.logger.Error("[AuthService -> SignUp -> GetByEmail]: ", err)
-		return false, customErr.NewInternalServerError("Failed to create user")
+		return nil, customErr.NewInternalServerError("Failed to create user")
 	}
 
 	if userGetByEmailResponse.User != nil {
-		return false, customErr.NewAlreadyExistsError("Email already exists")
+		return nil, customErr.NewAlreadyExistsError("Email already exists")
 	}
 
 	localSalt, err := s.passwordService.GenerateSalt(32)
 	if err != nil {
 		s.logger.Error("[AuthService -> SignUp -> GenerateSalt]: ", err)
-		return false, customErr.NewInternalServerError("Failed to create user")
+		return nil, customErr.NewInternalServerError("Failed to create user")
 	}
 
 	hashedPassword, err := s.passwordService.HashPassword(signUpRequestDTO.Password, localSalt)
 	if err != nil {
 		s.logger.Error("[AuthService -> SignUp -> HashPassword]: ", err)
-		return false, customErr.NewInternalServerError("Failed to create user")
+		return nil, customErr.NewInternalServerError("Failed to create user")
 	}
 
 	signUpRequestDTO.Password = hashedPassword
@@ -62,16 +62,16 @@ func (s *AuthService) SignUp(ctx context.Context, signUpRequestDTO *dto.SignUpRe
 	userCreateRequest := mapper.MapSignUpRequestDTOToUserCreateRequest(signUpRequestDTO)
 	userCreateRequest.Security.Salt = localSalt
 
-	_, err = s.userMicroService.Create(ctx, userCreateRequest)
+	userCreateResponse, err := s.userMicroService.Create(ctx, userCreateRequest)
 	if err != nil {
 		s.logger.Error("[AuthService -> SignUp -> Create]: ", err)
-		return false, customErr.NewInternalServerError("Failed to create user")
+		return nil, customErr.NewInternalServerError("Failed to create user")
 	}
 
-	return true, nil
+	return mapper.MapUserCreateResponseToAuthSignUpResponseDTO(userCreateResponse), nil
 }
 
-func (s *AuthService) SignIn(ctx context.Context, signInRequestDTO *dto.SignInRequestDTO) (*dto.UserTokensDTO, customErr.BaseErrorIface) {
+func (s *AuthService) SignIn(ctx context.Context, signInRequestDTO *dto.SignInRequestDTO) (*dto.SignInResponseDTO, customErr.BaseErrorIface) {
 	userGetByEmailRequest := mapper.MapEmailToUserGetByEmailRequest(signInRequestDTO.Email)
 
 	userGetByEmailResponse, err := s.userMicroService.GetByEmail(ctx, userGetByEmailRequest)
@@ -106,32 +106,32 @@ func (s *AuthService) SignIn(ctx context.Context, signInRequestDTO *dto.SignInRe
 	}
 
 	userGetByEmailResponse.User.Security.RefreshToken = refreshToken
-	updateRequest := mapper.MapUserGetByEmailResponseToUserUpdateRequest(userGetByEmailResponse)
+	userUpdateRequest := mapper.MapUserGetByEmailResponseToUserUpdateRequest(userGetByEmailResponse)
 
-	_, err = s.userMicroService.Update(ctx, updateRequest)
+	_, err = s.userMicroService.Update(ctx, userUpdateRequest)
 	if err != nil {
 		s.logger.Error("[AuthService -> SignIn -> Update]: ", err)
 		return nil, customErr.NewInternalServerError("Failed to sign in user")
 	}
 
-	return mapper.MapTokensToUserTokensDTO(accessToken, refreshToken), nil
+	return mapper.MapTokensToSignInResponseDTO(accessToken, refreshToken), nil
 }
 
-func (s *AuthService) SignOut(ctx context.Context, signOutRequestDTO *dto.SignOutRequestDTO) (bool, customErr.BaseErrorIface) {
+func (s *AuthService) SignOut(ctx context.Context, signOutRequestDTO *dto.SignOutRequestDTO) (*dto.SignOutResponseDTO, customErr.BaseErrorIface) {
 	userGetByIdRequest := mapper.MapIdToUserGetByIdRequest(signOutRequestDTO.Id)
 
 	userGetByIdResponse, err := s.userMicroService.GetById(ctx, userGetByIdRequest)
 	if err != nil {
 		s.logger.Error("[AuthService -> SignOut -> GetById]: ", err)
-		return false, customErr.NewInternalServerError("Failed to sign out user")
+		return nil, customErr.NewInternalServerError("Failed to sign out user")
 	}
 
 	if userGetByIdResponse.User == nil {
-		return false, customErr.NewNotFoundError("User not found")
+		return nil, customErr.NewNotFoundError("User not found")
 	}
 
 	if userGetByIdResponse.User.Security.RefreshToken == "" {
-		return true, nil
+		return nil, nil
 	}
 
 	userGetByIdResponse.User.Security.RefreshToken = ""
@@ -140,14 +140,14 @@ func (s *AuthService) SignOut(ctx context.Context, signOutRequestDTO *dto.SignOu
 	_, err = s.userMicroService.Update(ctx, userUpdateRequest)
 	if err != nil {
 		s.logger.Error("[AuthService -> SignOut -> Update]: ", err)
-		return false, customErr.NewInternalServerError("Failed to sign out user")
+		return nil, customErr.NewInternalServerError("Failed to sign out user")
 	}
 
-	return true, nil
+	return mapper.MapIsSignedOutToAuthSignOutResponseDTO(true), nil
 }
 
-func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserTokenDTO) (*dto.UserTokensDTO, customErr.BaseErrorIface) {
-	claims, err := s.jwtService.ValidateToken(refreshTokenDTO.Token)
+func (s *AuthService) Refresh(ctx context.Context, refreshRequestDTO *dto.RefreshRequestDTO) (*dto.RefreshResponseDTO, customErr.BaseErrorIface) {
+	claims, err := s.jwtService.ValidateToken(refreshRequestDTO.RefreshToken)
 	if err != nil {
 		return nil, err
 	}
@@ -164,7 +164,7 @@ func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserToke
 		return nil, customErr.NewNotFoundError("User not found")
 	}
 
-	if refreshTokenDTO.Token != userGetByIdResponse.User.Security.RefreshToken {
+	if refreshRequestDTO.RefreshToken != userGetByIdResponse.User.Security.RefreshToken {
 		return nil, customErr.NewInvalidTokenError("Invalid refresh token")
 	}
 
@@ -188,5 +188,5 @@ func (s *AuthService) Refresh(ctx context.Context, refreshTokenDTO *dto.UserToke
 		return nil, customErr.NewInternalServerError("Failed to refresh tokens")
 	}
 
-	return mapper.MapTokensToUserTokensDTO(accessToken, refreshToken), nil
+	return mapper.MapTokensToRefreshResponseDTO(accessToken, refreshToken), nil
 }

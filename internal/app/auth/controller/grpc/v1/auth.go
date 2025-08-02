@@ -31,8 +31,8 @@ func NewAuthServer(
 	}
 }
 
-func (s *AuthServer) SignUp(ctx context.Context, request *authPb.SignUpRequest) (*authPb.SignUpResponse, error) {
-	signUpRequestDTO := mapper.MapAuthSignUpRequestToSignUpRequestDTO(request)
+func (s *AuthServer) SignUp(ctx context.Context, signUpRequest *authPb.SignUpRequest) (*authPb.SignUpResponse, error) {
+	signUpRequestDTO := mapper.MapAuthSignUpRequestToSignUpRequestDTO(signUpRequest)
 
 	_, err := s.authService.SignUp(ctx, signUpRequestDTO)
 	if err != nil {
@@ -42,19 +42,19 @@ func (s *AuthServer) SignUp(ctx context.Context, request *authPb.SignUpRequest) 
 	return &authPb.SignUpResponse{Message: "User successfully registered"}, nil
 }
 
-func (s *AuthServer) SignIn(ctx context.Context, request *authPb.SignInRequest) (*authPb.SignInResponse, error) {
-	signInRequestDTO := mapper.MapAuthSignInRequestToSignInRequestDTO(request)
+func (s *AuthServer) SignIn(ctx context.Context, signInRequest *authPb.SignInRequest) (*authPb.SignInResponse, error) {
+	signInRequestDTO := mapper.MapAuthSignInRequestToSignInRequestDTO(signInRequest)
 
-	userTokensDTO, err := s.authService.SignIn(ctx, signInRequestDTO)
+	signInResponseDTO, err := s.authService.SignIn(ctx, signInRequestDTO)
 	if err != nil {
 		return &authPb.SignInResponse{}, status.Errorf(s.errorService.ErrToGrpcCode(err), err.Error())
 	}
 
-	return mapper.MapUserTokensDTOToAuthSignInResponse(userTokensDTO, "User successfully logged in"), nil
+	return mapper.MapSignInResponseDTOToAuthSignInResponse(signInResponseDTO, "User successfully logged in"), nil
 }
 
-func (s *AuthServer) SignOut(ctx context.Context, request *authPb.SignOutRequest) (*authPb.SignOutResponse, error) {
-	signOutRequestDTO := mapper.MapAuthSignOutRequestToSignOutRequestDTO(request)
+func (s *AuthServer) SignOut(ctx context.Context, signOutRequest *authPb.SignOutRequest) (*authPb.SignOutResponse, error) {
+	signOutRequestDTO := mapper.MapAuthSignOutRequestToSignOutRequestDTO(signOutRequest)
 
 	_, err := s.authService.SignOut(ctx, signOutRequestDTO)
 	if err != nil {
@@ -64,13 +64,13 @@ func (s *AuthServer) SignOut(ctx context.Context, request *authPb.SignOutRequest
 	return &authPb.SignOutResponse{Message: "User successfully logged out"}, nil
 }
 
-func (s *AuthServer) Refresh(ctx context.Context, request *authPb.RefreshRequest) (*authPb.RefreshResponse, error) {
-	userRefreshTokenDTO := mapper.MapAuthRefreshRequestToUserTokenDTO(request)
+func (s *AuthServer) Refresh(ctx context.Context, refreshRequest *authPb.RefreshRequest) (*authPb.RefreshResponse, error) {
+	refreshRequestDTO := mapper.MapAuthRefreshRequestToRefreshRequestDTO(refreshRequest)
 
-	userTokensDTO, err := s.authService.Refresh(ctx, userRefreshTokenDTO)
+	refreshResponseDTO, err := s.authService.Refresh(ctx, refreshRequestDTO)
 	if err != nil {
 		return &authPb.RefreshResponse{}, status.Errorf(s.errorService.ErrToGrpcCode(err), err.Error())
 	}
 
-	return mapper.MapUserTokensDTOToAuthRefreshResponse(userTokensDTO, "Tokens successfully updated"), nil
+	return mapper.MapRefreshResponseDTOToAuthRefreshResponse(refreshResponseDTO, "Tokens successfully updated"), nil
 }
