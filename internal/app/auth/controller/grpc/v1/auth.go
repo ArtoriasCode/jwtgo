@@ -31,8 +31,8 @@ func NewAuthServer(
 	}
 }
 
-func (s *AuthServer) SignUp(ctx context.Context, signUpRequest *authPb.SignUpRequest) (*authPb.SignUpResponse, error) {
-	signUpRequestDTO := mapper.MapAuthSignUpRequestToSignUpRequestDTO(signUpRequest)
+func (s *AuthServer) SignUp(ctx context.Context, request *authPb.SignUpRequest) (*authPb.SignUpResponse, error) {
+	signUpRequestDTO := mapper.MapAuthSignUpRequestToSignUpRequestDTO(request)
 
 	_, err := s.authService.SignUp(ctx, signUpRequestDTO)
 	if err != nil {
@@ -42,8 +42,8 @@ func (s *AuthServer) SignUp(ctx context.Context, signUpRequest *authPb.SignUpReq
 	return &authPb.SignUpResponse{Message: "User successfully registered"}, nil
 }
 
-func (s *AuthServer) SignIn(ctx context.Context, signInRequest *authPb.SignInRequest) (*authPb.SignInResponse, error) {
-	signInRequestDTO := mapper.MapAuthSignInRequestToSignInRequestDTO(signInRequest)
+func (s *AuthServer) SignIn(ctx context.Context, request *authPb.SignInRequest) (*authPb.SignInResponse, error) {
+	signInRequestDTO := mapper.MapAuthSignInRequestToSignInRequestDTO(request)
 
 	signInResponseDTO, err := s.authService.SignIn(ctx, signInRequestDTO)
 	if err != nil {
@@ -53,8 +53,8 @@ func (s *AuthServer) SignIn(ctx context.Context, signInRequest *authPb.SignInReq
 	return mapper.MapSignInResponseDTOToAuthSignInResponse(signInResponseDTO, "User successfully logged in"), nil
 }
 
-func (s *AuthServer) SignOut(ctx context.Context, signOutRequest *authPb.SignOutRequest) (*authPb.SignOutResponse, error) {
-	signOutRequestDTO := mapper.MapAuthSignOutRequestToSignOutRequestDTO(signOutRequest)
+func (s *AuthServer) SignOut(ctx context.Context, request *authPb.SignOutRequest) (*authPb.SignOutResponse, error) {
+	signOutRequestDTO := mapper.MapAuthSignOutRequestToSignOutRequestDTO(request)
 
 	_, err := s.authService.SignOut(ctx, signOutRequestDTO)
 	if err != nil {
@@ -64,8 +64,8 @@ func (s *AuthServer) SignOut(ctx context.Context, signOutRequest *authPb.SignOut
 	return &authPb.SignOutResponse{Message: "User successfully logged out"}, nil
 }
 
-func (s *AuthServer) Refresh(ctx context.Context, refreshRequest *authPb.RefreshRequest) (*authPb.RefreshResponse, error) {
-	refreshRequestDTO := mapper.MapAuthRefreshRequestToRefreshRequestDTO(refreshRequest)
+func (s *AuthServer) Refresh(ctx context.Context, request *authPb.RefreshRequest) (*authPb.RefreshResponse, error) {
+	refreshRequestDTO := mapper.MapAuthRefreshRequestToRefreshRequestDTO(request)
 
 	refreshResponseDTO, err := s.authService.Refresh(ctx, refreshRequestDTO)
 	if err != nil {

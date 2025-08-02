@@ -32,9 +32,9 @@ func NewUserServer(
 }
 
 func (s *UserServer) GetById(ctx context.Context, request *userPb.GetByIdRequest) (*userPb.GetByIdResponse, error) {
-	userIdDTO := mapper.MapUserGetByIdRequestToUserIdDTO(request)
+	getByIdRequestDTO := mapper.MapUserGetByIdRequestToGetByIdRequestDTO(request)
 
-	userDTO, err := s.userService.GetById(ctx, userIdDTO)
+	userDTO, err := s.userService.GetById(ctx, getByIdRequestDTO)
 	if err != nil {
 		return &userPb.GetByIdResponse{}, status.Errorf(s.errorService.ErrToGrpcCode(err), err.Error())
 	}
@@ -47,9 +47,9 @@ func (s *UserServer) GetById(ctx context.Context, request *userPb.GetByIdRequest
 }
 
 func (s *UserServer) GetByEmail(ctx context.Context, request *userPb.GetByEmailRequest) (*userPb.GetByEmailResponse, error) {
-	userEmailDTO := mapper.MapUserGetByEmailRequestToUserEmailDTO(request)
+	getByEmailRequestDTO := mapper.MapUserGetByEmailRequestToGetByEmailRequestDTO(request)
 
-	userDTO, err := s.userService.GetByEmail(ctx, userEmailDTO)
+	userDTO, err := s.userService.GetByEmail(ctx, getByEmailRequestDTO)
 	if err != nil {
 		return &userPb.GetByEmailResponse{}, status.Errorf(s.errorService.ErrToGrpcCode(err), err.Error())
 	}
@@ -62,9 +62,9 @@ func (s *UserServer) GetByEmail(ctx context.Context, request *userPb.GetByEmailR
 }
 
 func (s *UserServer) Create(ctx context.Context, request *userPb.CreateRequest) (*userPb.CreateResponse, error) {
-	userCreateDTO := mapper.MapUserCreateRequestToUserCreateDTO(request)
+	createRequestDTO := mapper.MapUserCreateRequestToCreateRequestDTO(request)
 
-	userDTO, err := s.userService.Create(ctx, userCreateDTO)
+	userDTO, err := s.userService.Create(ctx, createRequestDTO)
 	if err != nil {
 		return &userPb.CreateResponse{}, status.Errorf(s.errorService.ErrToGrpcCode(err), err.Error())
 	}
@@ -77,9 +77,9 @@ func (s *UserServer) Create(ctx context.Context, request *userPb.CreateRequest) 
 }
 
 func (s *UserServer) Update(ctx context.Context, request *userPb.UpdateRequest) (*userPb.UpdateResponse, error) {
-	userUpdateDTO := mapper.MapUserUpdateRequestToUserUpdateDTO(request)
+	updateRequestDTO := mapper.MapUserUpdateRequestToUpdateRequestDTO(request)
 
-	userDTO, err := s.userService.Update(ctx, userUpdateDTO)
+	userDTO, err := s.userService.Update(ctx, updateRequestDTO)
 	if err != nil {
 		return &userPb.UpdateResponse{}, status.Errorf(s.errorService.ErrToGrpcCode(err), err.Error())
 	}
@@ -92,9 +92,9 @@ func (s *UserServer) Update(ctx context.Context, request *userPb.UpdateRequest) 
 }
 
 func (s *UserServer) Delete(ctx context.Context, request *userPb.DeleteRequest) (*userPb.DeleteResponse, error) {
-	userDeleteDTO := mapper.MapUserDeleteRequestToUserDeleteDTO(request)
+	deleteRequestDTO := mapper.MapUserDeleteRequestToDeleteRequestDTO(request)
 
-	userDTO, err := s.userService.Delete(ctx, userDeleteDTO)
+	userDTO, err := s.userService.Delete(ctx, deleteRequestDTO)
 	if err != nil {
 		return &userPb.DeleteResponse{}, status.Errorf(s.errorService.ErrToGrpcCode(err), err.Error())
 	}

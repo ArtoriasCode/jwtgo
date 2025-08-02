@@ -17,23 +17,23 @@ type UserDTO struct {
 	UpdatedAt int64       `json:"updated_at"`
 }
 
-type UserIdDTO struct {
+type GetByIdRequestDTO struct {
 	Id string `json:"id"`
 }
 
-type UserEmailDTO struct {
-	Email string `json:"email" validate:"required,email"`
+type GetByEmailRequestDTO struct {
+	Email string `json:"email"`
 }
 
-type UserCreateDTO struct {
-	Email    string      `json:"email" validate:"required,email"`
+type CreateRequestDTO struct {
+	Email    string      `json:"email"`
 	Role     string      `json:"role"`
 	Username string      `json:"username"`
 	Gender   string      `json:"gender"`
 	Security SecurityDTO `json:"security"`
 }
 
-type UserUpdateDTO struct {
+type UpdateRequestDTO struct {
 	Id       string      `json:"id"`
 	Email    string      `json:"email"`
 	Role     string      `json:"role"`
@@ -42,6 +42,6 @@ type UserUpdateDTO struct {
 	Security SecurityDTO `json:"security"`
 }
 
-type UserDeleteDTO struct {
+type DeleteRequestDTO struct {
 	Id string `json:"id"`
 }

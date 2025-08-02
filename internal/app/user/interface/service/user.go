@@ -8,9 +8,9 @@ import (
 )
 
 type UserServiceIface interface {
-	GetById(ctx context.Context, userIdDTO *dto.UserIdDTO) (*dto.UserDTO, customErr.BaseErrorIface)
-	GetByEmail(ctx context.Context, userEmailDTO *dto.UserEmailDTO) (*dto.UserDTO, customErr.BaseErrorIface)
-	Create(ctx context.Context, userCreateDTO *dto.UserCreateDTO) (*dto.UserDTO, customErr.BaseErrorIface)
-	Update(ctx context.Context, userUpdateDTO *dto.UserUpdateDTO) (*dto.UserDTO, customErr.BaseErrorIface)
-	Delete(ctx context.Context, userDeleteDTO *dto.UserDeleteDTO) (*dto.UserDTO, customErr.BaseErrorIface)
+	GetById(ctx context.Context, getByIdRequestDTO *dto.GetByIdRequestDTO) (*dto.UserDTO, customErr.BaseErrorIface)
+	GetByEmail(ctx context.Context, getByEmailRequestDTO *dto.GetByEmailRequestDTO) (*dto.UserDTO, customErr.BaseErrorIface)
+	Create(ctx context.Context, createRequestDTO *dto.CreateRequestDTO) (*dto.UserDTO, customErr.BaseErrorIface)
+	Update(ctx context.Context, updateRequestDTO *dto.UpdateRequestDTO) (*dto.UserDTO, customErr.BaseErrorIface)
+	Delete(ctx context.Context, deleteRequestDTO *dto.DeleteRequestDTO) (*dto.UserDTO, customErr.BaseErrorIface)
 }

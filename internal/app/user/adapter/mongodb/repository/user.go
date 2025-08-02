@@ -55,8 +55,8 @@ func (ur *UserRepository) GetById(ctx context.Context, id string) (*domainEntity
 		return nil, customErr.NewInternalServerError("Failed to get user by id")
 	}
 
-	var user mongoEntity.User
-	err = ur.collection.FindOne(ctx, bson.M{"_id": objID}).Decode(&user)
+	var foundMongoUser mongoEntity.User
+	err = ur.collection.FindOne(ctx, bson.M{"_id": objID}).Decode(&foundMongoUser)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, customErr.NewNotFoundError("User not found")
@@ -66,12 +66,12 @@ func (ur *UserRepository) GetById(ctx context.Context, id string) (*domainEntity
 		return nil, customErr.NewInternalServerError("Failed to get user by id")
 	}
 
-	return mapper.MapMongoUserToDomainUser(&user), nil
+	return mapper.MapMongoUserToDomainUser(&foundMongoUser), nil
 }
 
 func (ur *UserRepository) GetByEmail(ctx context.Context, email string) (*domainEntity.User, customErr.BaseErrorIface) {
-	var user mongoEntity.User
-	err := ur.collection.FindOne(ctx, bson.M{"email": email}).Decode(&user)
+	var foundMongoUser mongoEntity.User
+	err := ur.collection.FindOne(ctx, bson.M{"email": email}).Decode(&foundMongoUser)
 
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
@@ -82,7 +82,7 @@ func (ur *UserRepository) GetByEmail(ctx context.Context, email string) (*domain
 		return nil, customErr.NewInternalServerError("Failed to get user by email")
 	}
 
-	return mapper.MapMongoUserToDomainUser(&user), nil
+	return mapper.MapMongoUserToDomainUser(&foundMongoUser), nil
 }
 
 func (ur *UserRepository) GetAll(ctx context.Context) ([]*domainEntity.User, customErr.BaseErrorIface) {
@@ -98,13 +98,13 @@ func (ur *UserRepository) GetAll(ctx context.Context) ([]*domainEntity.User, cus
 		}
 	}()
 
-	var users []*mongoEntity.User
-	if err := cursor.All(ctx, &users); err != nil {
+	var foundMongoUsers []*mongoEntity.User
+	if err := cursor.All(ctx, &foundMongoUsers); err != nil {
 		ur.logger.Error("[UserRepository -> GetAll -> All]: ", err)
 		return nil, customErr.NewInternalServerError("Failed to get users")
 	}
 
-	return mapper.MapMongoUsersToDomainUsers(users), nil
+	return mapper.MapMongoUsersToDomainUsers(foundMongoUsers), nil
 }
 
 func (ur *UserRepository) Create(ctx context.Context, domainUser *domainEntity.User) (*domainEntity.User, customErr.BaseErrorIface) {
@@ -177,8 +177,8 @@ func (ur *UserRepository) Delete(ctx context.Context, id string) (*domainEntity.
 		return nil, customErr.NewInternalServerError("Failed to delete user")
 	}
 
-	var deleted mongoEntity.User
-	err = ur.collection.FindOneAndDelete(ctx, bson.M{"_id": objID}).Decode(&deleted)
+	var deletedMongoUser mongoEntity.User
+	err = ur.collection.FindOneAndDelete(ctx, bson.M{"_id": objID}).Decode(&deletedMongoUser)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, customErr.NewNotFoundError("User not found")
@@ -188,5 +188,5 @@ func (ur *UserRepository) Delete(ctx context.Context, id string) (*domainEntity.
 		return nil, customErr.NewInternalServerError("Failed to delete user")
 	}
 
-	return mapper.MapMongoUserToDomainUser(&deleted), nil
+	return mapper.MapMongoUserToDomainUser(&deletedMongoUser), nil
 }

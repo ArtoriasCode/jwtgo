@@ -3,12 +3,11 @@ package mapper
 import (
 	"jwtgo/internal/app/user/controller/grpc/dto"
 	"jwtgo/internal/app/user/entity"
-
 	userPb "jwtgo/internal/pkg/proto/user"
 )
 
-func MapUserGetByIdRequestToUserIdDTO(request *userPb.GetByIdRequest) *dto.UserIdDTO {
-	return &dto.UserIdDTO{
+func MapUserGetByIdRequestToGetByIdRequestDTO(request *userPb.GetByIdRequest) *dto.GetByIdRequestDTO {
+	return &dto.GetByIdRequestDTO{
 		Id: request.Id,
 	}
 }
@@ -19,8 +18,8 @@ func MapUserDTOToUserGetByIdResponse(dto *dto.UserDTO) *userPb.GetByIdResponse {
 	}
 }
 
-func MapUserGetByEmailRequestToUserEmailDTO(request *userPb.GetByEmailRequest) *dto.UserEmailDTO {
-	return &dto.UserEmailDTO{
+func MapUserGetByEmailRequestToGetByEmailRequestDTO(request *userPb.GetByEmailRequest) *dto.GetByEmailRequestDTO {
+	return &dto.GetByEmailRequestDTO{
 		Email: request.Email,
 	}
 }
@@ -31,8 +30,8 @@ func MapUserDTOToUserGetByEmailResponse(dto *dto.UserDTO) *userPb.GetByEmailResp
 	}
 }
 
-func MapUserCreateRequestToUserCreateDTO(request *userPb.CreateRequest) *dto.UserCreateDTO {
-	return &dto.UserCreateDTO{
+func MapUserCreateRequestToCreateRequestDTO(request *userPb.CreateRequest) *dto.CreateRequestDTO {
+	return &dto.CreateRequestDTO{
 		Email:    request.Email,
 		Role:     request.Role,
 		Username: request.Username,
@@ -51,8 +50,8 @@ func MapUserDTOToUserCreateResponse(dto *dto.UserDTO) *userPb.CreateResponse {
 	}
 }
 
-func MapUserUpdateRequestToUserUpdateDTO(request *userPb.UpdateRequest) *dto.UserUpdateDTO {
-	return &dto.UserUpdateDTO{
+func MapUserUpdateRequestToUpdateRequestDTO(request *userPb.UpdateRequest) *dto.UpdateRequestDTO {
+	return &dto.UpdateRequestDTO{
 		Id:       request.Id,
 		Email:    request.Email,
 		Role:     request.Role,
@@ -72,8 +71,8 @@ func MapUserDTOToUserUpdateResponse(dto *dto.UserDTO) *userPb.UpdateResponse {
 	}
 }
 
-func MapUserDeleteRequestToUserDeleteDTO(request *userPb.DeleteRequest) *dto.UserDeleteDTO {
-	return &dto.UserDeleteDTO{
+func MapUserDeleteRequestToDeleteRequestDTO(request *userPb.DeleteRequest) *dto.DeleteRequestDTO {
+	return &dto.DeleteRequestDTO{
 		Id: request.Id,
 	}
 }
@@ -101,7 +100,7 @@ func MapUserEntityToUserDTO(entity *entity.User) *dto.UserDTO {
 	}
 }
 
-func MapUserCreateDTOToUserEntity(dto *dto.UserCreateDTO) *entity.User {
+func MapCreateRequestDTOToUserEntity(dto *dto.CreateRequestDTO) *entity.User {
 	return &entity.User{
 		Email:    dto.Email,
 		Role:     dto.Role,
@@ -115,7 +114,7 @@ func MapUserCreateDTOToUserEntity(dto *dto.UserCreateDTO) *entity.User {
 	}
 }
 
-func MapUserUpdateDTOToUserEntity(dto *dto.UserUpdateDTO) *entity.User {
+func MapUpdateRequestDTOToUserEntity(dto *dto.UpdateRequestDTO) *entity.User {
 	return &entity.User{
 		Id:       dto.Id,
 		Email:    dto.Email,
