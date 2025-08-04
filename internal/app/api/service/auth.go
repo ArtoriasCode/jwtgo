@@ -5,8 +5,8 @@ import (
 
 	"jwtgo/internal/app/api/controller/http/dto"
 	"jwtgo/internal/app/api/controller/http/mapper"
+	authPb "jwtgo/internal/generated/proto/auth"
 	customErr "jwtgo/internal/pkg/error/type"
-	authPb "jwtgo/internal/pkg/proto/auth"
 	"jwtgo/pkg/logging"
 )
 

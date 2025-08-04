@@ -17,9 +17,9 @@ import (
 	userRepositoryIface "jwtgo/internal/app/user/interface/repository"
 	userServiceIface "jwtgo/internal/app/user/interface/service"
 	userService "jwtgo/internal/app/user/service"
+	userPb "jwtgo/internal/generated/proto/user"
 	errorService "jwtgo/internal/pkg/error"
 	pkgServiceIface "jwtgo/internal/pkg/interface/service"
-	userPb "jwtgo/internal/pkg/proto/user"
 	"jwtgo/pkg/client"
 	"jwtgo/pkg/logging"
 )

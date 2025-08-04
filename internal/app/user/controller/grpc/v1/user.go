@@ -7,8 +7,8 @@ import (
 
 	"jwtgo/internal/app/user/controller/grpc/mapper"
 	userServiceIface "jwtgo/internal/app/user/interface/service"
+	userPb "jwtgo/internal/generated/proto/user"
 	pkgServiceIface "jwtgo/internal/pkg/interface/service"
-	userPb "jwtgo/internal/pkg/proto/user"
 	"jwtgo/pkg/logging"
 )
 

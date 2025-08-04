@@ -11,10 +11,10 @@ import (
 	"jwtgo/internal/app/api/controller/http/v1"
 	apiServiceIface "jwtgo/internal/app/api/interface/service"
 	apiService "jwtgo/internal/app/api/service"
+	authPb "jwtgo/internal/generated/proto/auth"
 	errorService "jwtgo/internal/pkg/error"
 	pkgServiceIface "jwtgo/internal/pkg/interface/service"
 	jwtService "jwtgo/internal/pkg/jwt"
-	authPb "jwtgo/internal/pkg/proto/auth"
 	"jwtgo/pkg/logging"
 )
 

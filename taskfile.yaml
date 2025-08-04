@@ -8,7 +8,8 @@ tasks:
       - g
     desc: "Generate code from proto files"
     cmds:
-      - protoc -I pkg pkg/proto/**/*.proto --go_out=./internal/pkg/ --go_opt=paths=source_relative --go-grpc_out=./internal/pkg/ --go-grpc_opt=paths=source_relative
+      - mkdir -p internal/generated
+      - protoc -I api api/proto/**/*.proto --go_out=./internal/generated/ --go_opt=paths=source_relative --go-grpc_out=./internal/generated/ --go-grpc_opt=paths=source_relative
 
   build:
     aliases:

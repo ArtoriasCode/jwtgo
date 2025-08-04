@@ -3,7 +3,7 @@ package mapper
 import (
 	"jwtgo/internal/app/user/controller/grpc/dto"
 	"jwtgo/internal/app/user/entity"
-	userPb "jwtgo/internal/pkg/proto/user"
+	userPb "jwtgo/internal/generated/proto/user"
 )
 
 func MapUserGetByIdRequestToGetByIdRequestDTO(request *userPb.GetByIdRequest) *dto.GetByIdRequestDTO {

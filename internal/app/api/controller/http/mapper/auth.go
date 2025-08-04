@@ -2,7 +2,7 @@ package mapper
 
 import (
 	"jwtgo/internal/app/api/controller/http/dto"
-	authPb "jwtgo/internal/pkg/proto/auth"
+	authPb "jwtgo/internal/generated/proto/auth"
 )
 
 func MapSignUpRequestDTOToAuthSignUpRequest(dto *dto.SignUpRequestDTO) *authPb.SignUpRequest {

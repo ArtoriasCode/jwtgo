@@ -58,11 +58,14 @@ cd jwtgo
 - Create a `.env` file, similar to `.env.sample`.
 - Install the [Docker](https://www.docker.com/get-started/), [Protoc](https://grpc.io/docs/protoc-installation/), [Taskfile](https://taskfile.dev/installation/) if it is not installed on your computer.
 - Fill in the `.env` file with your data.
+- Generate additional code with the following command:
+```bash
+task generate
+```
 - Run the application build with the following command:
-
-  ```bash
-  task build
-  ```
+```bash
+task build
+```
 - Access API using http://localhost.
 
 ## 🌐 Examples of API requests and responses

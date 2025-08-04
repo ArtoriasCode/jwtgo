@@ -11,11 +11,11 @@ import (
 	server "jwtgo/internal/app/auth/controller/grpc/v1"
 	authServiceIface "jwtgo/internal/app/auth/interface/service"
 	authService "jwtgo/internal/app/auth/service"
+	authPb "jwtgo/internal/generated/proto/auth"
+	userPb "jwtgo/internal/generated/proto/user"
 	errorService "jwtgo/internal/pkg/error"
 	pkgServiceIface "jwtgo/internal/pkg/interface/service"
 	jwtService "jwtgo/internal/pkg/jwt"
-	authPb "jwtgo/internal/pkg/proto/auth"
-	userPb "jwtgo/internal/pkg/proto/user"
 	"jwtgo/pkg/logging"
 )
 

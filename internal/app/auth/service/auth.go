@@ -2,12 +2,13 @@ package service
 
 import (
 	"context"
+	
 	"jwtgo/internal/app/auth/controller/grpc/dto"
 	"jwtgo/internal/app/auth/controller/grpc/mapper"
 	authServiceIface "jwtgo/internal/app/auth/interface/service"
+	userPb "jwtgo/internal/generated/proto/user"
 	customErr "jwtgo/internal/pkg/error/type"
 	pkgServiceIface "jwtgo/internal/pkg/interface/service"
-	userPb "jwtgo/internal/pkg/proto/user"
 	"jwtgo/pkg/logging"
 )
 

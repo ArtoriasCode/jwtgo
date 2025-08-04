@@ -2,6 +2,7 @@ vendor/
 bin/
 tmp_app/
 .idea/
+**/generated/
 
 article_clean
 _*
